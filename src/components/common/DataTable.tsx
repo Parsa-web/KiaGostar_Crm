@@ -1,0 +1,4 @@
+import type { ReactNode } from 'react'
+import { SkeletonLoader } from '../feedback'
+export interface DataTableColumn<T> { key: string; header: string; cell(item: T): ReactNode }
+export function DataTable<T>({ rows, columns, rowKey, loading, error }: { rows: readonly T[]; columns: readonly DataTableColumn<T>[]; rowKey(item: T): string; loading?: boolean; error?: string }) { if (loading) return <SkeletonLoader rows={5} />; if (error) return <p className="state-message state-message--error" role="alert">{error}</p>; if (!rows.length) return <p className="state-message">داده‌ای برای نمایش وجود ندارد.</p>; return <div className="table-scroll"><table><thead><tr>{columns.map((column) => <th key={column.key} scope="col">{column.header}</th>)}</tr></thead><tbody>{rows.map((row) => <tr key={rowKey(row)}>{columns.map((column) => <td key={column.key}>{column.cell(row)}</td>)}</tr>)}</tbody></table></div> }

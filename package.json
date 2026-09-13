@@ -1,0 +1,43 @@
+{
+  "name": "kiagostar-crm",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "verify:security": "vite build --ssr scripts/verify-security.ts --outDir .verification && node .verification/verify-security.js",
+    "verify:auth": "vite build --ssr scripts/verify-auth.ts --outDir .verification && node .verification/verify-auth.js",
+    "verify:workflows": "vite build --ssr scripts/verify-workflows.ts --outDir .verification && node .verification/verify-workflows.js",
+    "verify:phase9": "vite build --ssr scripts/verify-phase9.ts --outDir .verification && node .verification/verify-phase9.js",
+    "verify:ui": "vite build --ssr scripts/verify-ui-components.tsx --outDir .verification && node .verification/verify-ui-components.js",
+    "verify:phase11": "vite build --ssr scripts/verify-phase11.tsx --outDir .verification && node .verification/verify-phase11.js",
+    "verify:calendar": "vite build --ssr scripts/verify-calendar.ts --outDir .verification && node .verification/verify-calendar.js",
+    "verify:targeted": "vite build --ssr scripts/verify-targeted-flows.ts --outDir .verification && node .verification/verify-targeted-flows.js",
+    "test": "npm run verify:security && npm run verify:auth && npm run verify:workflows && npm run verify:phase9 && npm run verify:ui && npm run verify:phase11 && npm run verify:calendar && npm run verify:targeted",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@eslint/js": "^10.0.1",
+    "@rolldown/plugin-babel": "^0.2.3",
+    "@types/babel__core": "^7.20.5",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "eslint": "^10.8.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "globals": "^17.7.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.65.0",
+    "vite": "^8.2.0"
+  }
+}

@@ -1,0 +1,1 @@
+export const endpoints = Object.freeze({ users: '/users', meetings: '/meetings', tasks: '/tasks', reports: '/reports', requests: '/requests', notifications: '/notifications', files: '/files', knowledge: '/knowledge', automation: '/automation/rules' })

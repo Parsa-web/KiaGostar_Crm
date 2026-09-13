@@ -1,0 +1,6 @@
+import { formatFileSize, formatPersianDate } from '../../../core/utils'
+import type { FileAttachment } from '../types'
+export const AttachmentCard = ({ file, onDelete }: { file: FileAttachment; onDelete?(id: string): void }) => <article className="card"><strong>{file.originalName}</strong><small>{formatFileSize(file.size)} · {formatPersianDate(file.createdAt)}</small>{onDelete && <button type="button" onClick={() => onDelete(file.id)}>حذف</button>}</article>
+export const AttachmentList = ({ files, onDelete }: { files: readonly FileAttachment[]; onDelete?(id: string): void }) => files.length ? <div className="stack">{files.map((file) => <AttachmentCard key={file.id} file={file} onDelete={onDelete} />)}</div> : <p className="state-message">فایلی پیوست نشده است.</p>
+export const FileUploader = ({ onSelect, busy }: { onSelect(file: File): void; busy?: boolean }) => <label className="file-picker">انتخاب فایل<input type="file" disabled={busy} onChange={(event) => { const file = event.target.files?.[0]; if (file) onSelect(file) }} /></label>
+export const FilePreview = ({ file }: { file: FileAttachment }) => <section className="card"><h2>{file.originalName}</h2><dl><dt>نوع</dt><dd>{file.mimeType}</dd><dt>حجم</dt><dd>{formatFileSize(file.size)}</dd></dl></section>

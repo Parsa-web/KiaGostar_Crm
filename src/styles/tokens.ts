@@ -1,0 +1,1 @@
+export const uiTokens={colors:{primary:'var(--color-primary)',success:'var(--color-success)',warning:'var(--color-warning)',danger:'var(--color-danger)',info:'var(--color-info)'},spacing:{sm:'var(--space-2)',md:'var(--space-4)',lg:'var(--space-6)'},radius:{sm:'var(--radius-sm)',md:'var(--radius-md)',lg:'var(--radius-lg)'}} as const

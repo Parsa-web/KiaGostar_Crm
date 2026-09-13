@@ -1,0 +1,5 @@
+import type {RoleCode} from '../../domain/enums'
+export const roleLabels:Record<RoleCode,string>={MAIN_MANAGER:'مدیر اصلی',DEPARTMENT_MANAGER:'مدیر واحد',SECRETARY:'منشی',EMPLOYEE:'کارمند'}
+export const statusLabels:Readonly<Record<string,string>>={DRAFT:'پیش‌نویس',PENDING:'در انتظار',SCHEDULED:'زمان‌بندی‌شده',IN_PROGRESS:'در حال انجام',UNDER_REVIEW:'در حال بررسی',WAITING_REVIEW:'منتظر بررسی',APPROVED:'تأییدشده',REQUIRES_CORRECTION:'نیازمند اصلاح',REJECTED:'ردشده',COMPLETED:'تکمیل‌شده',CANCELLED:'لغوشده',ESCALATED:'ارجاع‌شده',FINALIZED:'نهایی‌شده',OVERDUE:'از موعد گذشته',ACTIVE:'فعال',INACTIVE:'غیرفعال'}
+export const priorityLabels:Readonly<Record<string,string>>={LOW:'کم',NORMAL:'عادی',MEDIUM:'متوسط',HIGH:'زیاد',CRITICAL:'بحرانی'}
+export const appLabels={appName:'کیا گستر',productName:'سامانه مدیریت ارتباطات و گردش کار',dashboard:'داشبورد',meetings:'جلسات',tasks:'وظایف',reports:'گزارش‌ها',requests:'درخواست‌ها',organization:'سازمان',users:'کاربران',departments:'واحدها',positions:'سمت‌ها',notifications:'اعلان‌ها',files:'فایل‌ها',audit:'رویدادها',workflow:'گردش کار',performance:'عملکرد',profile:'پروفایل',settings:'تنظیمات',logout:'خروج'} as const

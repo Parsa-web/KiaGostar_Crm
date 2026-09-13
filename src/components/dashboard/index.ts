@@ -1,0 +1,6 @@
+export {DashboardAutoLayout,DashboardComposedLayout,DashboardGrid,DashboardHeader,DashboardPersonalizationPanel,DashboardRow,DashboardWidget,NotificationSummary,QuickActions,UpcomingEvents} from './DashboardShell'
+export type {DashboardCompositionBand,DashboardCompositionColumn,DashboardContentKind,DashboardHeaderProps,DashboardLayoutItem,DashboardRowHeight,DashboardWidgetProps,NotificationSummaryItem,QuickActionDefinition,UpcomingEventItem,WidgetSize} from './DashboardShell'
+export {useDashboardPersonalization} from './useDashboardPersonalization'
+export type {PersonalizationEntry,PersonalizationState} from './useDashboardPersonalization'
+export {ActivityTrendWidget,CalendarPreviewWidget,ChartWidget,DeadlinesWidget,DepartmentOverviewWidget,DepartmentPerformanceWidget,KpiSummary,PendingApprovalsWidget,RecentFilesWidget,StatBreakdownWidget,TeamSummaryWidget} from './DashboardWidgets'
+export type {ApprovalItem,CalendarPreviewItem,DashboardChartKind,DeadlineItem,DepartmentSummaryRow,KpiDefinition,KpiSummaryProps,RecentFileItem,StatBreakdownItem,TeamMemberRow} from './DashboardWidgets'

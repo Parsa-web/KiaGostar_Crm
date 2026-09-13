@@ -1,0 +1,359 @@
+/* ==========================================================================
+   Primitives that were rendered but never styled.
+   Not an override layer — these are first definitions for components whose
+   markup shipped without a matching stylesheet.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Chart (components/ui/data-display/Chart.tsx)
+   -------------------------------------------------------------------------- */
+
+.ui-chart {
+  display: grid;
+  gap: var(--space-4);
+  min-inline-size: 0;
+}
+
+.ui-chart__title {
+  margin: 0;
+  font-size: var(--text-title-md);
+  font-weight: 600;
+}
+
+.ui-chart__description {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+}
+
+.ui-chart__bars {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.ui-chart__bar-row {
+  display: grid;
+  grid-template-columns: minmax(5rem, 8rem) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ui-chart__bar-label {
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  font-size: var(--text-body-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-chart__bar-track {
+  block-size: 0.625rem;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--color-background-muted);
+}
+
+.ui-chart__bar-fill {
+  display: block;
+  block-size: 100%;
+  border-radius: inherit;
+  background: var(--color-primary);
+  transition: inline-size var(--duration-normal) var(--easing-standard);
+}
+
+.ui-chart__bar-value {
+  color: var(--color-text-primary);
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-chart__canvas {
+  min-inline-size: 0;
+}
+
+.ui-chart__svg {
+  inline-size: 100%;
+  block-size: auto;
+  overflow: visible;
+}
+
+.ui-chart__axis {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.ui-chart__donut-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+/* The conic-gradient lives on this element, so it needs an explicit round shape:
+   without the 1/1 ratio the div collapses to a thin bar and the chart reads as
+   an unstyled block. The inner mask punches the hole that makes it a donut and
+   hosts the centred total. */
+.ui-chart__donut {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  inline-size: clamp(8rem, 40%, 11rem);
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-full, 999px);
+  box-shadow: inset 0 0 0 1px var(--color-border-subtle);
+}
+
+.ui-chart__donut::before {
+  position: absolute;
+  border-radius: inherit;
+  background: var(--color-surface);
+  box-shadow: inset 0 0 0 1px var(--color-border-subtle);
+  inset: 22%;
+  content: '';
+}
+
+.ui-chart__donut > span {
+  position: relative;
+  color: var(--color-text-primary);
+  font-weight: 700;
+  font-size: var(--text-title-sm, 1.125rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+
+.ui-chart__legend {
+  display: grid;
+  flex: 1 1 12rem;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-chart__legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-body-sm);
+}
+
+.ui-chart__swatch {
+  flex: 0 0 auto;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+}
+
+.ui-chart__legend-label {
+  flex: 1;
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-chart__legend-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Module surfaces: person rows + empty slot
+   -------------------------------------------------------------------------- */
+
+.module-person__body {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.module-person__name {
+  overflow: hidden;
+  font-size: var(--text-body-md);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.module-person__meta {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.module-empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-4);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Notifications
+   -------------------------------------------------------------------------- */
+
+.notification-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.notification-card.is-unread {
+  border-color: var(--color-primary-tint);
+  background: var(--color-surface-selected);
+}
+
+/* --------------------------------------------------------------------------
+   Meetings: compact row, card footer, participant tags, live title
+   -------------------------------------------------------------------------- */
+
+.meeting-compact {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-muted);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.meeting-compact__main {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.meeting-compact__title {
+  overflow: hidden;
+  font-size: var(--text-body-md);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meeting-compact__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.meeting-compact__side {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.meeting-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-block-start: var(--space-3);
+  border-block-start: 1px solid var(--color-border-muted);
+}
+
+.meeting-participant-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.meeting-live__title {
+  margin: 0;
+  font-size: var(--text-h3);
+  font-weight: 700;
+}
+
+/* Voice recorder ---------------------------------------------------------- */
+
+.voice-recorder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-background-subtle);
+}
+
+.voice-recorder.is-recording {
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-soft);
+}
+
+/* --------------------------------------------------------------------------
+   Calendar & kanban gaps
+   -------------------------------------------------------------------------- */
+
+.calendar__day-number {
+  display: block;
+  margin-block-end: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar__day.is-today .calendar__day-number {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+.calendar__event-meta {
+  display: block;
+  overflow: hidden;
+  color: inherit;
+  font-size: var(--text-caption);
+  opacity: 0.8;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kanban__card-wrapper {
+  display: grid;
+  gap: var(--space-2);
+}
+
+/* --------------------------------------------------------------------------
+   Work panels
+   -------------------------------------------------------------------------- */
+
+.work-panel__body {
+  display: grid;
+  gap: var(--space-3);
+  min-inline-size: 0;
+}
+
+.comments__author {
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+}
+
+.related-links__label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

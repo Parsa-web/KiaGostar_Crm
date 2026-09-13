@@ -1,0 +1,3 @@
+import type { ApiErrorPayload } from './types'
+export class ApiError extends Error { readonly status: number; readonly code: string; readonly details?: unknown; constructor(payload: ApiErrorPayload) { super(payload.message); this.name = 'ApiError'; this.status = payload.status; this.code = payload.code; this.details = payload.details } }
+export const apiErrorHandler = (error: unknown) => { if (error instanceof ApiError) return error; if (error instanceof DOMException && error.name === 'AbortError') return new ApiError({ status: 499, code: 'REQUEST_CANCELLED', message: 'درخواست لغو شد.' }); return new ApiError({ status: 0, code: 'NETWORK_ERROR', message: error instanceof Error ? error.message : 'ارتباط با سرور برقرار نشد.' }) }

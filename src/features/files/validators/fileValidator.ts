@@ -1,0 +1,5 @@
+/* eslint-disable no-control-regex */
+const allowed=new Set(['application/pdf','image/jpeg','image/png','image/webp','text/plain','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
+const dangerous=/\.(exe|cmd|bat|com|scr|ps1|js|vbs|msi|jar)(\.|$)/i
+export const MAX_FILE_SIZE=20*1024*1024
+export const fileValidator={validate(file:Pick<File,'name'|'size'|'type'>){const errors:string[]=[];if(!file.name.trim()||file.name.includes('..')||/[<>:"/\\|?*\x00-\x1F]/.test(file.name)||dangerous.test(file.name))errors.push('نام فایل مجاز نیست.');if(file.size<=0||file.size>MAX_FILE_SIZE)errors.push('حجم فایل خارج از محدوده مجاز است.');if(!allowed.has(file.type.toLowerCase()))errors.push('نوع فایل پشتیبانی نمی‌شود.');return{valid:errors.length===0,errors}},assert(file:Pick<File,'name'|'size'|'type'>){const result=this.validate(file);if(!result.valid)throw new Error(result.errors.join(' '));return true}}

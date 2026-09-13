@@ -1,0 +1,2 @@
+import type { ReactNode } from 'react'; import { checkAccess } from './accessGuard'; import type { AccessRequirement, AuthorizationSubject } from './types'
+export function ProtectedRoute({subject,children,unauthenticated=null,forbidden=null,...requirement}:AccessRequirement & {subject:AuthorizationSubject|null;children:ReactNode;unauthenticated?:ReactNode;forbidden?:ReactNode}) { if(!subject)return unauthenticated; return checkAccess(subject,requirement)?children:forbidden }

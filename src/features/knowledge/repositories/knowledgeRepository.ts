@@ -1,0 +1,2 @@
+import type {KnowledgeArticle,KnowledgeRepository} from '../types'
+export class InMemoryKnowledgeRepository implements KnowledgeRepository{private items=new Map<string,KnowledgeArticle>();async create(item:KnowledgeArticle){this.items.set(item.id,structuredClone(item));return item}async update(item:KnowledgeArticle){this.items.set(item.id,structuredClone(item));return item}async findById(id:string){return structuredClone(this.items.get(id)??null)}async findAll(){return [...this.items.values()].map((item)=>structuredClone(item))}}

@@ -1,0 +1,2 @@
+export const settle = async <T>(promise: Promise<T>): Promise<[T, null] | [null, unknown]> => { try { return [await promise, null] } catch (error) { return [null, error] } }
+export const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => new Promise((resolve, reject) => { const timer = setTimeout(() => reject(new Error('TIMEOUT')), ms); promise.then((value) => { clearTimeout(timer); resolve(value) }, (error) => { clearTimeout(timer); reject(error) }) })

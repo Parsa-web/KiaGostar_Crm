@@ -1,0 +1,2 @@
+import {ApiError} from '../api'
+export const errorHandlerService={normalize(error:unknown){if(error instanceof ApiError)return{code:error.code,message:error.message,status:error.status};if(error instanceof Error)return{code:'APPLICATION_ERROR',message:error.message,status:500};return{code:'UNKNOWN_ERROR',message:'خطای پیش‌بینی‌نشده رخ داد.',status:500}},message(error:unknown){return this.normalize(error).message}}

@@ -1,0 +1,5 @@
+import { formatPersianDate } from '../../../core/utils'; import type { AuditLog } from '../types'
+export const AuditDetails = ({ log }: { log: AuditLog }) => <article className="card"><h2>{log.description}</h2><dl><dt>کاربر</dt><dd>{log.performedBy}</dd><dt>عملیات</dt><dd>{log.action}</dd><dt>موجودیت</dt><dd>{log.entityType} / {log.entityId}</dd><dt>زمان</dt><dd>{formatPersianDate(log.createdAt)}</dd></dl>{(log.oldValue !== undefined || log.newValue !== undefined) && <pre>{JSON.stringify({ before: log.oldValue, after: log.newValue }, null, 2)}</pre>}</article>
+export const AuditLogList = ({ logs }: { logs: readonly AuditLog[] }) => logs.length ? <div className="stack">{logs.map((log) => <AuditDetails key={log.id} log={log} />)}</div> : <p className="state-message">سابقه‌ای ثبت نشده است.</p>
+export const ActivityTimeline = ({ logs }: { logs: readonly AuditLog[] }) => <ol className="timeline">{logs.map((log) => <li key={log.id}><strong>{log.description}</strong><span>{log.performedBy}</span><time dateTime={log.createdAt}>{formatPersianDate(log.createdAt)}</time></li>)}</ol>
+export const AuditTimeline = ActivityTimeline

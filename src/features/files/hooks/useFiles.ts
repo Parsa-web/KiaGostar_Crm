@@ -1,0 +1,7 @@
+import { useCallback, useEffect, useState } from 'react'
+import type { AuthorizedPrincipal, ResourceScope } from '../../../security'
+import type { FileManagementService } from '../services'
+import type { FileAttachment, UploadFileInput } from '../types'
+export function useFiles(service: FileManagementService, actor: AuthorizedPrincipal, entityType: string, entityId: string, resource: ResourceScope) { const [files, setFiles] = useState<readonly FileAttachment[]>([]); const [loading, setLoading] = useState(true); const [error, setError] = useState<string>(); const refresh = useCallback(async () => { setLoading(true); try { setFiles(await service.getEntityFiles(actor, entityType, entityId, resource)); setError(undefined) } catch { setError('دریافت فایل‌ها انجام نشد.') } finally { setLoading(false) } }, [service, actor, entityType, entityId, resource]); useEffect(() => { const timer = window.setTimeout(() => { void refresh() }, 0); return () => window.clearTimeout(timer) }, [refresh]); return { files, loading, error, refresh } }
+export function useUploadFile(service: FileManagementService, actor: AuthorizedPrincipal) { const [uploading, setUploading] = useState(false); const upload = useCallback(async (input: UploadFileInput) => { setUploading(true); try { return await service.uploadFile(actor, input) } finally { setUploading(false) } }, [service, actor]); return { upload, uploading } }
+export const useAttachments = useFiles

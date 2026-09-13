@@ -1,0 +1,2 @@
+import type {ReactNode} from 'react';import {cx} from './utils'
+export function Divider({orientation='horizontal',inset=false,children,className}:{orientation?:'horizontal'|'vertical';inset?:boolean;children?:ReactNode;className?:string}){return <div className={cx('ui-divider',`ui-divider--${orientation}`,inset&&'ui-divider--inset',children&&'ui-divider--text',className)} role="separator" aria-orientation={orientation}>{children&&<span>{children}</span>}</div>}

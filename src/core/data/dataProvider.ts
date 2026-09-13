@@ -1,0 +1,1 @@
+export interface DataProvider { list<T>(resource: string, query?: Record<string, unknown>): Promise<readonly T[]>; get<T>(resource: string, id: string): Promise<T | null>; create<T>(resource: string, value: T): Promise<T>; update<T>(resource: string, id: string, value: Partial<T>): Promise<T>; delete(resource: string, id: string): Promise<void> }

@@ -1,0 +1,4 @@
+import { EvaluationTimeline, PerformanceChart } from '../components'; import type { Evaluation } from '../types'
+export const EmployeePerformanceDashboard = ({ evaluations }: { evaluations: readonly Evaluation[] }) => <main><h1>عملکرد من</h1><PerformanceChart evaluations={evaluations} /><EvaluationTimeline evaluations={evaluations} /></main>
+export const DepartmentPerformanceDashboard = ({ evaluations }: { evaluations: readonly Evaluation[] }) => <main><h1>عملکرد واحد</h1><PerformanceChart evaluations={evaluations} /><EvaluationTimeline evaluations={evaluations} /></main>
+export const OrganizationPerformanceDashboard = ({ summaries }: { summaries: readonly { departmentId: string; averageScore: number }[] }) => <main><h1>عملکرد سازمان</h1><div className="dashboard-grid">{summaries.map((item) => <article className="card" key={item.departmentId}><strong>{item.departmentId}</strong><span>{item.averageScore}</span></article>)}</div></main>

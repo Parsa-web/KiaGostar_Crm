@@ -1,0 +1,2 @@
+import { apiClient } from '../api'; import { ApiDataProvider } from './apiDataProvider'; import type { DataProvider } from './dataProvider'; import { MockDataProvider } from './mockDataProvider'
+export const createDataProvider = (mode: 'mock' | 'api' = import.meta.env.VITE_DATA_PROVIDER === 'api' ? 'api' : 'mock'): DataProvider => mode === 'api' ? new ApiDataProvider(apiClient) : new MockDataProvider()

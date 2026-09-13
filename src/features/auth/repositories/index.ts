@@ -1,0 +1,6 @@
+export * from './AuthRepository'
+export * from './CapabilityAssignmentRepository'
+export * from './InMemoryAuthRepository'
+export * from './RoleAssignmentRepository'
+export * from './PersistentSessionRepository'
+export * from './SessionRepository'

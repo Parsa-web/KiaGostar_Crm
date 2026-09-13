@@ -1,0 +1,2 @@
+import type {StorageProvider,StorageUpload} from './types'
+export class CloudStorageProvider implements StorageProvider{constructor(private readonly adapter?:StorageProvider){}private require(){if(!this.adapter)throw new Error('CLOUD_STORAGE_NOT_CONFIGURED');return this.adapter}upload(input:StorageUpload){return this.require().upload(input)}delete(key:string){return this.require().delete(key)}getUrl(key:string){return this.require().getUrl(key)}exists(key:string){return this.require().exists(key)}}

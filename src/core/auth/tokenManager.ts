@@ -1,0 +1,4 @@
+import type { TokenPair } from './types'
+export interface TokenStorage { read(): TokenPair | null; write(tokens: TokenPair): void; clear(): void }
+export class MemoryTokenStorage implements TokenStorage { private value: TokenPair | null = null; read() { return this.value ? { ...this.value } : null } write(tokens: TokenPair) { this.value={...tokens} } clear() { this.value=null } }
+export class TokenManager { constructor(private readonly storage: TokenStorage = new MemoryTokenStorage()) {} getAccessToken() { const tokens=this.storage.read(); return tokens && !this.isExpired(tokens) ? tokens.accessToken : null } getRefreshToken() { return this.storage.read()?.refreshToken ?? null } setTokens(tokens: TokenPair) { this.storage.write(tokens) } clearTokens() { this.storage.clear() } isExpired(tokens: TokenPair = this.storage.read() ?? { accessToken: '' }) { return Boolean(tokens.expiresAt && Date.parse(tokens.expiresAt) <= Date.now()) } }

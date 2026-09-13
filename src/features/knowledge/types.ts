@@ -1,0 +1,5 @@
+import type { AuthorizedPrincipal } from '../../security'
+export type KnowledgeStatus='DRAFT'|'UNDER_REVIEW'|'PUBLISHED'|'ARCHIVED'
+export interface KnowledgeArticle {id:string;title:string;content:string;category:'PROCEDURES'|'GUIDELINES'|'INTERNAL_DOCUMENTS'|'SOLUTIONS'|'MEETING_KNOWLEDGE';createdBy:string;departmentId?:string;status:KnowledgeStatus;fileIds:string[];relatedMeetingIds:string[];relatedDecisionIds:string[];relatedTaskIds:string[];createdAt:string;updatedAt:string}
+export interface KnowledgeRepository{create(item:KnowledgeArticle):Promise<KnowledgeArticle>;update(item:KnowledgeArticle):Promise<KnowledgeArticle>;findById(id:string):Promise<KnowledgeArticle|null>;findAll():Promise<readonly KnowledgeArticle[]>}
+export const canViewKnowledge=(actor:AuthorizedPrincipal,item:KnowledgeArticle)=>item.status==='PUBLISHED'&&(actor.roles.includes('MAIN_MANAGER')||!item.departmentId||actor.departmentIds.includes(item.departmentId))||item.createdBy===actor.userId||Boolean(item.departmentId&&actor.roles.includes('DEPARTMENT_MANAGER')&&actor.departmentIds.includes(item.departmentId))

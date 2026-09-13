@@ -1,0 +1,1 @@
+html{direction:rtl}body{text-align:start}[dir=rtl] input[type=email],[dir=rtl] input[type=tel],[dir=rtl] input[type=url]{direction:rtl}.directional-icon{transform:scaleX(-1)}.breadcrumb-list{padding-inline-start:0}.table-scroll{direction:rtl}

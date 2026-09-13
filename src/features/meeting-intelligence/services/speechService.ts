@@ -1,0 +1,2 @@
+import { VoiceService } from '../../meetings/services/voiceService'
+export class SpeechService { constructor(private readonly provider=new VoiceService()){} startListening(){this.provider.startRecording()} stopListening(){this.provider.stopRecording()} getTranscript(){return this.provider.getTranscript()} clearTranscript(){this.provider.clearTranscript()} subscribe(listener:(transcript:string,recording:boolean)=>void){return this.provider.subscribe(listener)} }

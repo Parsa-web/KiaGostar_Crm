@@ -1,0 +1,285 @@
+/* ==========================================================================
+   Minimal Layer — strip visual noise so the pastel palette can breathe.
+   Only contains legitimate simplifications, not token overrides.
+   ========================================================================== */
+
+/* ==========================================================================
+   1. Kill accent-bar noise
+   ========================================================================== */
+
+.ui-kpi::before,
+.dashboard-kpi::before {
+  display: none !important;
+}
+
+.ui-kpi--primary,
+.ui-kpi--success,
+.ui-kpi--warning,
+.ui-kpi--danger,
+.ui-kpi--info {
+  border-block-start: 1px solid var(--color-border);
+}
+
+.ui-data-card--primary,
+.ui-data-card--success,
+.ui-data-card--warning,
+.ui-data-card--danger,
+.ui-data-card--info {
+  border-inline-start: 1px solid var(--color-border);
+}
+
+.ui-data-card--primary { background: linear-gradient(90deg, var(--color-primary-softer), var(--color-surface) 40%); }
+.ui-data-card--success { background: linear-gradient(90deg, var(--color-success-soft), var(--color-surface) 40%); }
+.ui-data-card--warning { background: linear-gradient(90deg, var(--color-warning-soft), var(--color-surface) 40%); }
+.ui-data-card--danger  { background: linear-gradient(90deg, var(--color-danger-soft),  var(--color-surface) 40%); }
+.ui-data-card--info    { background: linear-gradient(90deg, var(--color-info-soft),    var(--color-surface) 40%); }
+
+.dashboard-kpi--success .dashboard-kpi__icon { background: var(--color-success-soft); color: var(--color-success-text); }
+.dashboard-kpi--warning .dashboard-kpi__icon { background: var(--color-warning-soft); color: var(--color-warning-text); }
+.dashboard-kpi--danger  .dashboard-kpi__icon { background: var(--color-danger-soft);  color: var(--color-danger-text); }
+.dashboard-kpi--info    .dashboard-kpi__icon { background: var(--color-info-soft);    color: var(--color-info-text); }
+
+/* ==========================================================================
+   2. Lists — no browser bullets
+   ========================================================================== */
+
+.quick-actions,
+.dashboard-quick-actions,
+.dashboard-list,
+.nav-group ul,
+.sidebar-nav ul,
+.menu-list,
+.comments,
+.attachments,
+.related-links,
+.ui-tag-list,
+.ui-timeline,
+.ui-activity-feed,
+.ui-steps,
+.ui-upload-progress,
+.breadcrumb-list,
+.ui-menu,
+.ui-pagination__pages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.quick-actions > li,
+.dashboard-quick-actions > li,
+.nav-group ul > li,
+.sidebar-nav ul > li {
+  list-style: none;
+}
+
+/* ==========================================================================
+   3. Buttons — quiet by default, colour only for real CTAs
+   ========================================================================== */
+
+.quick-actions__item,
+.dashboard-quick-action,
+.ui-stat-card,
+.ui-kpi,
+.ui-data-card,
+.card--interactive,
+.kanban__card,
+.calendar__day,
+.ui-view-switcher__option,
+.ui-table__sort,
+.ui-table__expander,
+.module-list__item,
+.dashboard-list__item,
+.sidebar-collapse,
+.profile-trigger,
+.header-search,
+.menu-item,
+.ui-chip__select,
+.ui-chip__remove,
+.ui-sheet__grabber,
+.text-control__action,
+.embedded-action,
+.ui-pagination__page {
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  font-weight: 500;
+}
+
+.quick-actions__item,
+.ui-view-switcher__option,
+.ui-table__sort,
+.ui-table__expander,
+.menu-item,
+.ui-chip__select,
+.ui-chip__remove,
+.ui-sheet__grabber,
+.text-control__action,
+.embedded-action {
+  background: transparent;
+}
+
+.quick-actions__item:hover:not(:disabled) {
+  color: var(--color-primary-active);
+  background: var(--color-primary-softer);
+  border-color: var(--color-primary-tint);
+}
+
+.quick-actions__item:hover .quick-actions__icon {
+  background: var(--color-primary-tint);
+  color: var(--color-primary-active);
+}
+
+/* ==========================================================================
+   4. Flatten shell — fewer lines, more air
+   ========================================================================== */
+
+.app-header {
+  border-block-end: 1px solid var(--color-border-muted);
+  box-shadow: none;
+}
+
+.app-sidebar {
+  border-inline-end: 1px solid var(--color-border-muted);
+  box-shadow: none;
+  background: var(--color-surface);
+}
+
+.sidebar-brand {
+  border-block-end: 1px solid var(--color-border-muted);
+}
+
+.brand-mark__symbol {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-active);
+  box-shadow: none;
+}
+
+.avatar {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-active);
+  box-shadow: none;
+  font-weight: 700;
+}
+
+.nav-link[aria-current="page"]::before {
+  display: none;
+}
+
+.nav-link[aria-current="page"] {
+  color: var(--color-primary-active);
+  background: var(--color-primary-soft);
+}
+
+/* ==========================================================================
+   5. Cards — hairline borders, almost no shadow
+   ========================================================================== */
+
+.card,
+.ui-card,
+.ui-data-card,
+.ui-kpi,
+.ui-stat-card,
+.module-surface,
+.dashboard-panel,
+.dashboard-kpi,
+.ui-filter-bar,
+.ui-table-scroll,
+.ui-grid__viewport {
+  border-color: var(--color-border-muted);
+  box-shadow: none;
+  background: var(--color-surface);
+}
+
+.card--interactive:hover,
+.ui-card--interactive:hover,
+.ui-kpi--interactive:hover,
+.ui-data-card--interactive:hover,
+.ui-stat-card--interactive:hover,
+.dashboard-kpi:hover,
+.dashboard-quick-action:hover {
+  border-color: var(--color-primary-tint);
+  box-shadow: var(--shadow-sm);
+  transform: none;
+}
+
+.dashboard__hero {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+/* ==========================================================================
+   6. Type — lighter weights, calmer hierarchy
+   ========================================================================== */
+
+.dashboard-kpi__label,
+.ui-kpi__label {
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.dashboard-kpi__value,
+.ui-kpi__value {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.dashboard-panel__title,
+.ui-card__header h2,
+.ui-card__header h3 {
+  font-weight: 600;
+}
+
+thead th,
+.ui-table thead th {
+  font-weight: 600;
+  background: var(--color-background-subtle);
+  color: var(--color-text-muted);
+}
+
+.badge,
+.ui-badge,
+.ui-status-badge,
+.ui-tag {
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.badge::before {
+  display: none;
+}
+
+/* ==========================================================================
+   7. Canvas — subtle pastel wash
+   ========================================================================== */
+
+body {
+  background-color: var(--color-background);
+  background-image:
+    radial-gradient(48rem 26rem at 88% -6%, rgba(37, 99, 235, 0.05), transparent 60%),
+    radial-gradient(42rem 24rem at 6% 0%, rgba(99, 102, 241, 0.04), transparent 58%);
+  background-attachment: fixed;
+}
+
+/* ==========================================================================
+   8. Focus — one calm ring
+   ========================================================================== */
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid Highlight;
+  }
+}

@@ -1,0 +1,5 @@
+import type { MeetingRecord } from '../../types'; import { MeetingCard } from '../MeetingIntelligenceComponents'
+export type CalendarView='MONTH'|'WEEK'|'DAY'
+export const MeetingCalendar=({meetings,view='MONTH',onViewChange}:{meetings:readonly MeetingRecord[];view?:CalendarView;onViewChange?(view:CalendarView):void})=><section className="card"><header><h2>تقویم جلسات</h2><select value={view} onChange={(event)=>onViewChange?.(event.target.value as CalendarView)}><option value="MONTH">ماه</option><option value="WEEK">هفته</option><option value="DAY">روز</option></select></header><div className="calendar-grid">{meetings.map((meeting)=><MeetingCard key={meeting.id} meeting={meeting}/>)}</div></section>
+export const CalendarEvent=MeetingCard
+export const CalendarFilter=({value,onChange}:{value:string;onChange(value:string):void})=><select value={value} onChange={(event)=>onChange(event.target.value)}><option value="ALL">همه</option><option value="UPCOMING">آینده</option><option value="COMPLETED">تکمیل‌شده</option><option value="CANCELLED">لغوشده</option><option value="PENDING_DOCUMENTATION">مستندسازی ناقص</option></select>

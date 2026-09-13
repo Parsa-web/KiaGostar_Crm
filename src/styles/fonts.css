@@ -1,0 +1,5 @@
+/* Self-hosted Latin sans for Persian UI (Shabnam, SIL OFL)
+   Weight map: 300 Light, 400-500 Medium (body), 700 Bold. */
+@font-face { font-family: 'Shabnam'; font-style: normal; font-weight: 300; font-display: swap; src: url('../assets/fonts/Shabnam-Light.woff2') format('woff2'); }
+@font-face { font-family: 'Shabnam'; font-style: normal; font-weight: 400 500; font-display: swap; src: url('../assets/fonts/Shabnam-Medium.woff2') format('woff2'); }
+@font-face { font-family: 'Shabnam'; font-style: normal; font-weight: 600 900; font-display: swap; src: url('../assets/fonts/Shabnam-Bold.woff2') format('woff2'); }

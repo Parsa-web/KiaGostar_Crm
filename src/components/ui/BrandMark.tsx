@@ -1,0 +1,1 @@
+export function BrandMark({compact=false}:{compact?:boolean}){return <span className="brand-mark" aria-label="کیا گستر"><span className="brand-mark__symbol" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M7 6h18v6H13v4h9v10H7v-6h9v-4H7z"/></svg></span>{!compact&&<span className="brand-mark__text"><strong>کیا گستر</strong><small>سامانه مدیریت داخلی</small></span>}</span>}

@@ -1,0 +1,48 @@
+/* Module surfaces: organisation, workflow, performance, files, search, calendar — Design System tokens only */
+
+/* Card layout inside module pages */
+.module-card .ui-card__body{display:flex;flex-direction:column;gap:var(--space-3)}
+.section-card .ui-card__body{display:flex;flex-direction:column;gap:var(--space-3)}
+.module-card__header{display:flex;align-items:flex-start;gap:var(--space-3)}
+.section-card__header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2)}
+.module-card__icon{display:grid;place-items:center;inline-size:var(--space-9);block-size:var(--space-9);border-radius:var(--radius-md);background:var(--color-primary-soft);color:var(--color-primary);flex:none}
+.module-card__title{margin:0;font-size:var(--font-size-md);font-weight:var(--font-weight-semibold);color:var(--color-text-primary)}
+.module-card__subtitle{margin:0;font-size:var(--font-size-xs);color:var(--color-text-muted)}
+.module-search{inline-size:min(100%,20rem)}
+
+/* Organisation lists */
+.description-list{margin:0;display:grid;gap:var(--space-2)}
+.description-list>div{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding:var(--space-2) 0;border-bottom:1px dashed var(--color-border)}
+.description-list>div:last-child{border-bottom:0}
+.description-list dt{color:var(--color-text-muted);font-size:var(--font-size-xs)}
+.description-list dd{margin:0;font-weight:var(--font-weight-medium);color:var(--color-text-primary)}
+.member-chips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.member-chips li{display:inline-flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);border:1px solid var(--color-border);border-radius:var(--radius-full);background:var(--color-surface-muted);font-size:var(--font-size-xs);color:var(--color-text-secondary);max-inline-size:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plain-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:var(--space-2)}
+.plain-list>li{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding:var(--space-2) var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md)}
+.link-button{border:0;background:none;padding:0;font:inherit;display:inline-flex;align-items:center;gap:var(--space-2);color:var(--color-text-link);cursor:pointer}
+.link-button:hover{color:var(--color-text-link-hover);text-decoration:underline}
+.link-button:focus-visible{outline:var(--focus-ring-width) solid var(--color-focus-ring);outline-offset:2px}
+
+/* Workflow progress steps */
+.progress-steps{list-style:none;margin:0;padding:0;display:flex;align-items:center;gap:var(--space-2);overflow-x:auto}
+.progress-steps li{display:flex;align-items:center;gap:var(--space-1);font-size:var(--font-size-xs);color:var(--color-text-muted);white-space:nowrap}
+.progress-steps li+li::before{content:'';inline-size:var(--space-4);block-size:2px;background:var(--color-border);flex:none}
+.progress-steps__dot{inline-size:var(--space-2);block-size:var(--space-2);border-radius:var(--radius-full);background:var(--color-surface-muted);flex:none}
+.progress-steps li.is-done{color:var(--color-success-text)}
+.progress-steps li.is-done .progress-steps__dot{background:var(--color-success)}
+.progress-steps li.is-current{color:var(--color-text-primary);font-weight:var(--font-weight-semibold)}
+.progress-steps li.is-current .progress-steps__dot{background:var(--color-primary)}
+
+/* Metric / stat grid */
+.stat-grid{display:grid;gap:var(--space-3);grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr))}
+
+/* Calendar — base behaviour only.
+   Layout, sizing and states live in refinements.css (single source of truth);
+   duplicating them here caused the month grid and its cells to fight. */
+.app-calendar-grid__cell,
+.calendar-list__item{font:inherit;cursor:pointer}
+.app-calendar-grid__cell--empty{cursor:default}
+.app-calendar-grid__cell:focus-visible,
+.calendar-list__item:focus-visible{outline:var(--focus-ring-width) solid var(--color-focus-ring);outline-offset:2px}
+.app-calendar-grid__dot--neutral{background:var(--color-text-muted)}

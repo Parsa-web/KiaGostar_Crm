@@ -1,0 +1,1195 @@
+/* ==========================================================================
+   Layout & Component Finish
+   Loaded after the design system. Contains layout fixes and component
+   enhancements that go beyond the base definitions.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. PAGE SHELL — container rhythm for all routed pages
+   -------------------------------------------------------------------------- */
+
+.app-main {
+  min-inline-size: 0;
+  padding-block: var(--space-5);
+  padding-inline: var(--space-5);
+}
+
+.module-page,
+.list-page,
+.detail-page,
+.settings-page,
+.dashboard-page {
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+  inline-size: 100%;
+  max-inline-size: var(--app-content-max-width, 90rem);
+  margin-inline: auto;
+  min-inline-size: 0;
+}
+
+.app-main .module-page,
+.app-main .dashboard-page,
+.app-main > .page-container {
+  padding-inline: 0;
+  padding-block: 0;
+}
+
+@media (max-width: 899px) {
+  .app-main { padding-inline: var(--space-4); padding-block: var(--space-4); }
+  .module-page, .dashboard-page { gap: var(--space-4); }
+}
+
+@media (max-width: 599px) {
+  .app-main { padding-inline: var(--space-3); }
+}
+
+/* --------------------------------------------------------------------------
+   2. PAGE HEADER / TOOLBAR
+   -------------------------------------------------------------------------- */
+
+/* `.ui-toolbar` is a COLUMN (title row, then optional selection row).
+   The horizontal split lives on `.ui-toolbar__main`; forcing a row here
+   shrink-wraps the header and drags the title away from the start edge. */
+.ui-toolbar,
+.module-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ui-toolbar__main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-5);
+  inline-size: 100%;
+}
+
+/* Titles own the start edge (right in RTL); controls are pushed to the end. */
+.ui-toolbar__heading,
+.ui-toolbar__titles {
+  display: grid;
+  gap: 2px;
+  flex: 1 1 16rem;
+  min-inline-size: 0;
+  text-align: start;
+}
+
+.ui-toolbar__slots {
+  flex: 0 1 auto;
+  justify-content: flex-end;
+  margin-inline-start: auto;
+}
+
+/* Page title: one shared, distinctive treatment for every tab. */
+.ui-toolbar__title,
+.dashboard-header__title {
+  position: relative;
+  margin: 0;
+  padding-inline-start: var(--space-3);
+  font-size: var(--text-h3);
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: start;
+}
+
+.ui-toolbar__title::before,
+.dashboard-header__title::before {
+  content: "";
+  position: absolute;
+  inset-block: 0.15em 0.15em;
+  inset-inline-start: 0;
+  inline-size: 3px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+}
+
+
+.ui-toolbar__subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+}
+
+.ui-toolbar__actions,
+.ui-toolbar__filters,
+.ui-toolbar__export,
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  /* Bottom alignment keeps labelled fields and unlabelled buttons on one baseline. */
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.ui-toolbar__actions { margin-inline-start: auto; }
+.ui-toolbar__selection-summary { color: var(--color-text-muted); font-size: var(--text-body-sm); }
+
+.module-search,
+.ui-toolbar__search { flex: 1 1 16rem; min-inline-size: 0; max-inline-size: 26rem; }
+
+/* --- Control harmony -------------------------------------------------------
+   Toolbars mix labelled inputs with bare buttons. Without a shared control
+   height and a collapsed (empty) helper row the two drift apart vertically —
+   the mismatch visible on the calendar and organisation headers. */
+
+.ui-toolbar__actions .ui-button,
+.ui-toolbar__filters .ui-button,
+.filter-row .ui-button,
+.dashboard-header__actions .ui-button { flex: 0 0 auto; }
+
+.ui-toolbar__actions .form-field,
+.ui-toolbar__filters .form-field,
+.ui-toolbar__search .form-field,
+.dashboard-header__tools .form-field { gap: var(--space-1); min-inline-size: 0; }
+
+/* TextField always renders `.form-field__meta` with a placeholder <span/>, and
+   `.form-message` reserves a 1.35rem line. Inside a toolbar that phantom row is
+   what lifts the input above the neighbouring button, so collapse it when the
+   only child is that empty placeholder. */
+.ui-toolbar .form-field__meta:has(> span:only-child:empty),
+.dashboard-header .form-field__meta:has(> span:only-child:empty),
+.filter-row .form-field__meta:has(> span:only-child:empty) { display: none; }
+
+
+.ui-toolbar__actions .ui-button,
+.ui-toolbar__filters .ui-button,
+.filter-row .ui-button,
+.calendar-nav .ui-button,
+.dashboard-header__actions .ui-button { min-block-size: var(--control-height-md, 2.5rem); }
+
+.ui-toolbar__actions .ui-button--sm,
+.ui-toolbar__filters .ui-button--sm,
+.filter-row .ui-button--sm,
+.calendar-nav .ui-button--sm { min-block-size: var(--control-height-sm, 2rem); }
+
+/* Icon-only navigation buttons stay square instead of stretching. */
+.calendar-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.calendar-nav .ui-button:not(:has(> :not(.ui-icon))) { padding-inline: var(--space-2); }
+
+@media (max-width: 899px) {
+  .ui-toolbar,
+  .module-toolbar { align-items: stretch; }
+  .ui-toolbar__actions { margin-inline-start: 0; inline-size: 100%; }
+  .dashboard-header__tools { inline-size: 100%; }
+  .dashboard-header__tools .form-field,
+  .ui-toolbar__actions .form-field { flex: 1 1 100%; max-inline-size: none; }
+}
+
+@media (max-width: 599px) {
+  /* Full-width CTAs read better than two half-width buttons on a phone. */
+  .ui-toolbar__actions > .ui-button,
+  .dashboard-header__actions > .ui-button { flex: 1 1 auto; justify-content: center; }
+  .ui-segmented,
+  .view-switch { inline-size: 100%; }
+  .ui-segmented button,
+  .view-switch button { flex: 1 1 0; }
+}
+
+
+/* Segmented view switch */
+.filter-row--segmented,
+.view-switch,
+.ui-segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-background-muted);
+}
+
+.view-switch button,
+.ui-segmented button {
+  min-block-size: 2rem;
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: var(--text-body-sm);
+}
+
+.view-switch button[aria-pressed="true"],
+.view-switch button.is-active,
+.ui-segmented button[aria-pressed="true"],
+.ui-segmented button.is-active {
+  color: var(--color-primary-active);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+/* --------------------------------------------------------------------------
+   3. GRIDS — equal-height cards, no ragged rows
+   -------------------------------------------------------------------------- */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--app-card-gap, var(--space-3));
+}
+
+.module-card-grid,
+.card-grid,
+.content-grid,
+.workflow-grid,
+.request-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  gap: var(--app-card-gap, var(--space-3));
+  align-items: stretch;
+}
+
+.stat-grid > *,
+.ui-kpi-grid > *,
+.module-card-grid > *,
+.card-grid > *,
+.content-grid > * {
+  block-size: 100%;
+  min-inline-size: 0;
+}
+
+@media (max-width: 1279px) { .stat-grid, .ui-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 899px)  { .stat-grid, .ui-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 479px)  { .stat-grid, .ui-kpi-grid { grid-template-columns: 1fr; } }
+
+/* --------------------------------------------------------------------------
+   4. STAT / KPI CARDS — number-led hierarchy
+   -------------------------------------------------------------------------- */
+
+.ui-stat-card,
+.ui-kpi {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  block-size: 100%;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--duration-fast) var(--easing-standard),
+              box-shadow var(--duration-fast) var(--easing-standard);
+}
+
+.ui-stat-card__header,
+.ui-kpi__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ui-stat-card__label,
+.ui-kpi__label {
+  flex: 1;
+  color: var(--color-text-muted);
+  font-size: var(--text-label-md);
+  font-weight: 600;
+}
+
+.ui-stat-card__icon,
+.ui-kpi__icon {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.ui-stat-card__value,
+.ui-kpi__value,
+.ui-statistic__value {
+  font-size: var(--text-h1);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-stat-card__description,
+.ui-kpi__description {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.ui-kpi__trend,
+.ui-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  inline-size: max-content;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-background-muted);
+  color: var(--color-text-secondary);
+  font-size: var(--text-caption);
+  font-weight: 600;
+}
+
+.ui-trend--up,   .ui-kpi__trend--up   { color: var(--color-success-text); background: var(--color-success-soft); }
+.ui-trend--down, .ui-kpi__trend--down { color: var(--color-danger-text);  background: var(--color-danger-soft); }
+.ui-trend--flat, .ui-kpi__trend--flat { color: var(--color-text-muted);   background: var(--color-background-muted); }
+
+/* --------------------------------------------------------------------------
+   5. CHARTS
+   -------------------------------------------------------------------------- */
+
+.dashboard-widget__body > .ui-chart > .ui-chart__title,
+.dashboard-widget__body > .ui-chart > .ui-chart__description,
+.dashboard-widget__body .ui-chart > h3,
+.module-surface__body > .ui-chart > .ui-chart__title,
+.work-panel__body > .ui-chart > .ui-chart__title {
+  display: none;
+}
+
+.ui-chart ul,
+.ui-chart ol,
+.ui-chart__legend {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-chart ul::marker,
+.ui-chart li::marker { content: none; }
+
+.ui-chart__legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: var(--space-2) var(--space-3);
+}
+
+.ui-chart__canvas,
+.ui-chart__svg,
+.ui-chart svg {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  max-block-size: 15rem;
+}
+
+.ui-chart__bar-track { background: var(--color-background-muted); }
+.ui-chart__bar-fill  { background: var(--color-primary); }
+
+/* Line/area charts (e.g. «روند فعالیت»): the canvas had no height and the
+   x-axis is an HTML <ul> that was only given SVG `stroke`, so it rendered as a
+   bare bullet list under an empty plot. Give the plot a real box and lay the
+   axis labels out across the same seven-to-N columns as the data points. */
+.ui-chart__canvas {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) 0 0;
+}
+
+.ui-chart__canvas > .ui-chart__svg {
+  display: block;
+  block-size: var(--ui-chart-height, 13rem);
+  min-block-size: 8rem;
+  max-block-size: none;
+  padding-block-end: 2px;
+  border-block-end: 1px solid var(--color-border);
+  border-inline-start: 1px solid var(--color-border);
+  overflow: visible;
+}
+
+.ui-chart__axis {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  /* Reset the SVG-only paint properties that leaked onto this HTML list. */
+  stroke: none;
+}
+
+.ui-chart__axis li {
+  flex: 1 1 0;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Bar rows: label — track — value, aligned on a single readable grid. */
+.ui-chart__bars { gap: var(--space-2); }
+
+.ui-chart__bar-row {
+  grid-template-columns: minmax(4rem, 8rem) 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ui-chart__bar-label,
+.ui-chart__bar-value { font-size: var(--text-caption); }
+.ui-chart__bar-label { color: var(--color-text-secondary); text-align: start; }
+.ui-chart__bar-value { font-variant-numeric: tabular-nums; font-weight: 700; }
+.ui-chart__bar-track { border-radius: var(--radius-full); }
+.ui-chart__bar-fill  { border-radius: var(--radius-full); }
+
+
+/* --------------------------------------------------------------------------
+   6. TABLES
+   -------------------------------------------------------------------------- */
+
+.ui-table-host,
+.ui-table-wrapper,
+.table-card {
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.ui-table-host__scroll,
+.table-scroll { overflow-x: auto; overscroll-behavior-x: contain; }
+
+.ui-table-host table,
+.ui-table-wrapper table { min-inline-size: 46rem; border-collapse: collapse; }
+
+th {
+  padding-block: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--text-label-sm);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+td { padding-block: var(--space-3); vertical-align: middle; }
+
+tbody tr { transition: background var(--duration-fast) var(--easing-standard); }
+
+.ui-table-host__pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-block-start: 1px solid var(--color-border-muted);
+  background: var(--color-background-subtle);
+  font-size: var(--text-body-sm);
+}
+
+.module-cell { display: grid; gap: 2px; min-inline-size: 0; }
+.module-cell__primary { display: flex; align-items: center; gap: var(--space-2); font-weight: 600; color: var(--color-text-primary); }
+.module-cell__secondary { color: var(--color-text-muted); font-size: var(--text-caption); }
+
+/* --------------------------------------------------------------------------
+   7. WORKFLOW CARDS
+   -------------------------------------------------------------------------- */
+
+.module-card {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  block-size: 100%;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--duration-fast) var(--easing-standard),
+              box-shadow var(--duration-fast) var(--easing-standard);
+}
+
+.module-card:hover { border-color: var(--color-primary-tint); box-shadow: var(--shadow-sm); }
+
+.module-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-inline-size: 0;
+}
+
+.module-card__icon {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.module-card__header > div { flex: 1; min-inline-size: 0; }
+.module-card__title { margin: 0; font-size: var(--text-body-md); font-weight: 700; line-height: 1.5; }
+.module-card__subtitle { margin: 0; color: var(--color-text-muted); font-size: var(--text-caption); }
+
+/* Approval step rail */
+.progress-steps {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  padding: var(--space-1) 0;
+  list-style: none;
+}
+
+.progress-steps li {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-1);
+  min-inline-size: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  white-space: nowrap;
+}
+
+.progress-steps li::after {
+  content: "";
+  flex: 1;
+  block-size: 2px;
+  min-inline-size: var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-border);
+}
+
+.progress-steps li:last-child::after { display: none; }
+
+.progress-steps__dot {
+  flex: 0 0 auto;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: var(--radius-full);
+  background: var(--color-border-strong);
+}
+
+.progress-steps li.is-done { color: var(--color-success-text); font-weight: 600; }
+.progress-steps li.is-done .progress-steps__dot { background: var(--color-success); }
+.progress-steps li.is-done::after { background: var(--color-success-border); }
+.progress-steps li.is-current { color: var(--color-primary-active); font-weight: 700; }
+.progress-steps li.is-current .progress-steps__dot { background: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-soft); }
+
+.module-card .badge,
+.module-card .ui-status-badge { direction: ltr; unicode-bidi: isolate; }
+
+/* --------------------------------------------------------------------------
+   8. LISTS INSIDE CARDS
+   -------------------------------------------------------------------------- */
+
+.plain-list,
+.member-chips,
+.calendar-list { margin: 0; padding: 0; list-style: none; }
+
+.plain-list > li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-block-end: 1px solid var(--color-border-muted);
+  font-size: var(--text-body-sm);
+}
+
+.plain-list > li:last-child { border-block-end: 0; }
+.plain-list > li > span:first-child { display: inline-flex; align-items: center; gap: var(--space-2); min-inline-size: 0; }
+
+.member-chips { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.member-chips > li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-background-muted);
+  color: var(--color-text-secondary);
+  font-size: var(--text-caption);
+}
+
+.description-list { display: grid; gap: var(--space-2); margin: 0; }
+.description-list > div { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.description-list dt { color: var(--color-text-muted); font-size: var(--text-caption); }
+.description-list dd { margin: 0; font-size: var(--text-body-sm); font-weight: 600; }
+
+.section-card { padding: var(--space-5); }
+.section-card__header { margin-block-end: var(--space-3); }
+
+.link-button {
+  min-block-size: 0;
+  padding: 0;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-align: start;
+}
+.link-button:hover { color: var(--color-primary-hover); text-decoration: underline; }
+
+/* --------------------------------------------------------------------------
+   9. CALENDAR
+   -------------------------------------------------------------------------- */
+
+/* The month view is a Jalali grid: a header row and a body grid that must share
+   the exact same column template, otherwise the weekday labels drift off the
+   columns they describe. */
+.app-calendar { display: grid; gap: var(--space-1); }
+
+.app-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.app-calendar-grid--head { gap: var(--space-1); margin-block-end: 2px; }
+
+.app-calendar-grid__weekday {
+  padding-block: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-label-sm);
+  font-weight: 700;
+  text-align: center;
+}
+
+.app-calendar-grid__cell {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  justify-items: center;
+  gap: var(--space-1);
+  min-block-size: 4.5rem;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border-muted);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  transition: background var(--duration-fast) var(--easing-standard),
+              border-color var(--duration-fast) var(--easing-standard);
+}
+
+.app-calendar-grid__cell:hover { border-color: var(--color-primary-tint); background: var(--color-primary-softer); }
+.app-calendar-grid__cell--empty { border-color: transparent; background: transparent; pointer-events: none; }
+.app-calendar-grid__cell.is-selected { border-color: var(--color-primary); background: var(--color-primary-softer); box-shadow: 0 0 0 1px var(--color-primary); }
+
+/* Days that belong to the neighbouring Jalali month stay visible but recede. */
+.app-calendar-grid__cell.is-outside {
+  border-color: transparent;
+  background: var(--color-background-subtle);
+  color: var(--color-text-disabled, var(--color-text-muted));
+  opacity: 0.65;
+}
+
+.app-calendar-grid__cell.is-outside:hover { opacity: 1; }
+
+.app-calendar-grid__date { font-size: var(--text-body-sm); font-variant-numeric: tabular-nums; }
+
+
+.app-calendar-grid__cell.is-today .app-calendar-grid__date {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 700;
+}
+
+.app-calendar-grid__dots { display: flex; flex-wrap: wrap; gap: 3px; }
+.app-calendar-grid__dot { inline-size: 5px; block-size: 5px; border-radius: var(--radius-full); background: var(--color-border-strong); }
+.app-calendar-grid__dot--primary { background: var(--color-primary); }
+.app-calendar-grid__dot--info    { background: var(--color-info); }
+.app-calendar-grid__dot--success { background: var(--color-success); }
+.app-calendar-grid__dot--warning { background: var(--color-warning); }
+.app-calendar-grid__dot--danger  { background: var(--color-danger); }
+
+.calendar-list { display: grid; gap: 2px; margin-block-start: var(--space-4); }
+
+.calendar-list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  inline-size: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  text-align: start;
+  font-weight: 500;
+}
+
+.calendar-list__item:hover { background: var(--color-primary-softer); }
+.calendar-list__date { display: grid; flex: 0 0 auto; gap: 0; min-inline-size: 6rem; font-size: var(--text-caption); font-variant-numeric: tabular-nums; }
+.calendar-list__title { flex: 1; min-inline-size: 0; overflow: hidden; font-size: var(--text-body-sm); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.calendar-list__meta { flex: 0 1 auto; max-inline-size: 10rem; overflow: hidden; font-size: var(--text-caption); text-overflow: ellipsis; white-space: nowrap; }
+
+/* Week strip — seven equal day columns, same rhythm as the month grid. */
+.app-calendar-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.app-calendar-week__day {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--color-border-muted);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-size: var(--text-caption);
+  text-align: center;
+}
+
+.app-calendar-week__day > header { display: grid; gap: 2px; }
+.app-calendar-week__day > header span { color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+.app-calendar-week__day.is-today { border-color: var(--color-primary); background: var(--color-primary-softer); }
+.app-calendar-week__events { display: grid; gap: var(--space-1); margin: var(--space-1) 0 0; padding: 0; list-style: none; text-align: start; }
+.app-calendar-week__events button { display: grid; gap: 2px; inline-size: 100%; padding: var(--space-2); border: 1px solid var(--color-border-muted); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-text-primary); font: inherit; text-align: start; cursor: pointer; }
+.app-calendar-week__events button:hover { border-color: var(--color-primary); background: var(--color-primary-softer); }
+.app-calendar-week__events time { color: var(--color-primary); font-variant-numeric: tabular-nums; }
+.app-calendar-week__events span { overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.app-calendar-week__events small { color: var(--color-text-muted); }
+
+/* Toolbar of the shared EntityCalendar: nav — title — view switch. */
+.calendar__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+}
+
+.calendar__title { flex: 1 1 auto; margin: 0; text-align: center; font-size: var(--text-title-md); font-weight: 700; }
+.calendar__nav { display: inline-flex; align-items: center; gap: var(--space-1); }
+.calendar__weekday-short { display: none; }
+
+.calendar__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-label-sm);
+  font-weight: 700;
+  text-align: center;
+}
+
+.calendar__grid--month {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+@media (max-width: 899px) {
+  .calendar__title { order: -1; flex-basis: 100%; text-align: start; }
+  .calendar__weekday-long { display: none; }
+  .calendar__weekday-short { display: inline; }
+}
+
+@media (max-width: 599px) {
+  .app-calendar-grid__cell { min-block-size: 3.25rem; padding: var(--space-1); }
+  .app-calendar-grid__cell.is-today .app-calendar-grid__date { inline-size: 1.375rem; block-size: 1.375rem; }
+  .calendar-list__date { min-inline-size: 4.5rem; }
+  .calendar-list__meta { display: none; }
+  .app-calendar-week { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+
+/* --------------------------------------------------------------------------
+   10. DASHBOARD ROW CLIPPING
+   -------------------------------------------------------------------------- */
+
+.dashboard-agenda__item { flex-wrap: wrap; }
+.dashboard-agenda__body { flex: 1 1 10rem; }
+.dashboard-agenda__meta,
+.dashboard-deadlines__meta,
+.dashboard-approvals__meta { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; }
+.dashboard-widget__body { overflow: hidden; }
+
+/* --------------------------------------------------------------------------
+   11. BADGES / TAGS
+   -------------------------------------------------------------------------- */
+
+.ui-tag,
+.ui-status-badge,
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  inline-size: max-content;
+  max-inline-size: 100%;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-label-sm);
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   12. EMPTY / ERROR STATES
+   -------------------------------------------------------------------------- */
+
+.ui-empty,
+.module-empty,
+.state-panel {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-8);
+  text-align: center;
+}
+
+.ui-empty__title { font-size: var(--text-title-md); font-weight: 700; }
+.ui-empty__description { max-inline-size: 30rem; color: var(--color-text-secondary); font-size: var(--text-body-sm); }
+
+/* --------------------------------------------------------------------------
+   13. RTL
+   -------------------------------------------------------------------------- */
+
+[dir="rtl"] .ui-toolbar__actions,
+[dir="rtl"] .dashboard-header__tools { margin-inline-start: auto; margin-inline-end: 0; }
+
+/* --- Card content alignment ------------------------------------------------
+   Cards mixed `padding: var(--space-4)` (Card) with `var(--space-5)` (stat and
+   section cards), so neighbouring cards in the same row had different inner
+   gutters. One padding scale for every card surface, and text anchored to the
+   start edge (right in RTL) instead of inheriting a centred parent. */
+.ui-card__header,
+.ui-card__body,
+.ui-card__footer,
+.dashboard-widget__header,
+.dashboard-widget__body,
+.dashboard-widget__footer,
+.ui-stat-card,
+.ui-kpi,
+.module-card,
+.section-card { --app-card-padding: var(--space-4); }
+
+.ui-card__header,
+.ui-card__body,
+.ui-card__footer,
+.dashboard-widget__header,
+.dashboard-widget__body,
+.dashboard-widget__footer {
+  padding-inline: var(--app-card-padding);
+}
+
+.ui-stat-card,
+.ui-kpi,
+.module-card,
+.section-card { padding: var(--app-card-padding); }
+
+/* Text inside a card always reads from the start edge. */
+.ui-card__body,
+.dashboard-widget__body,
+.module-card,
+.ui-stat-card,
+.ui-kpi,
+.section-card { text-align: start; }
+
+/* Widget header: icon + title on the start edge, tools pinned to the end. */
+.dashboard-widget__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+}
+
+.dashboard-widget__heading { flex: 1 1 12rem; min-inline-size: 0; text-align: start; }
+.dashboard-widget__tools { flex: 0 0 auto; display: flex; align-items: center; gap: var(--space-2); margin-inline-start: auto; }
+.dashboard-widget__title { margin: 0; font-size: var(--text-title-md); font-weight: 700; line-height: 1.5; }
+.dashboard-widget__description { margin: 0; color: var(--color-text-muted); font-size: var(--text-caption); }
+
+/* Nested lists/tables must not add a second gutter on top of the card padding. */
+.ui-card__body > .plain-list,
+.ui-card__body > .description-list,
+.dashboard-widget__body > ul,
+.dashboard-widget__body > ol,
+.dashboard-widget__body > .ui-chart { margin: 0; padding-inline: 0; }
+
+.dashboard-widget__body > .ui-table-host,
+.ui-card__body > .ui-table-host { border: 0; border-radius: 0; box-shadow: none; }
+
+@media (max-width: 599px) {
+  .ui-card__header,
+  .ui-card__body,
+  .ui-card__footer,
+  .dashboard-widget__header,
+  .dashboard-widget__body,
+  .dashboard-widget__footer,
+  .ui-stat-card,
+  .ui-kpi,
+  .module-card,
+  .section-card { --app-card-padding: var(--space-3); }
+}
+
+
+code, kbd, samp, [data-ltr] { direction: ltr; unicode-bidi: isolate; }
+
+/* --------------------------------------------------------------------------
+   14. PAGE HEADER — the shared graphic treatment for every tab
+   -------------------------------------------------------------------------- */
+
+.ui-toolbar,
+.dashboard-header {
+  position: relative;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(38rem 12rem at 100% 0%, var(--bg-primary), transparent 70%),
+    var(--gradient-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+/* Brand hairline along the top edge ties every header to the primary colour. */
+.ui-toolbar::before,
+.dashboard-header::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: var(--space-5);
+  block-size: 2px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-brand);
+  opacity: 0.9;
+}
+
+/* The title marker from section 2 becomes the accent bar of this header. */
+.ui-toolbar__title,
+.dashboard-header__title { font-size: var(--text-h2); letter-spacing: -0.01em; }
+
+.ui-toolbar__subtitle,
+.dashboard-header__greeting { color: var(--color-text-muted); }
+
+@media (max-width: 599px) {
+  .ui-toolbar,
+  .dashboard-header { padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); }
+  .ui-toolbar::before,
+  .dashboard-header::before { inset-inline: var(--space-4); }
+}
+
+/* --------------------------------------------------------------------------
+   15. DASHBOARD CARDS — one shared shape for every role panel
+   -------------------------------------------------------------------------- */
+
+/* KPI tiles render as <button> when they navigate and as <article> when they
+   do not. The button carried the UA padding and centred text, which is why the
+   linked stat cards sat further from the card edge than their neighbours. */
+.ui-kpi,
+.ui-stat-card {
+  --app-card-padding: var(--space-4);
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  inline-size: 100%;
+  block-size: 100%;
+  margin: 0;
+  padding: var(--app-card-padding);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+  font: inherit;
+  color: inherit;
+  text-align: start;
+}
+
+button.ui-kpi,
+.ui-kpi--interactive {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: transform var(--duration-fast) var(--easing-standard),
+              border-color var(--duration-fast) var(--easing-standard),
+              box-shadow var(--duration-fast) var(--easing-standard);
+}
+
+.ui-kpi__head { display: flex; align-items: center; gap: var(--space-2); min-inline-size: 0; }
+.ui-kpi__title { flex: 1; min-inline-size: 0; color: var(--color-text-muted); font-size: var(--text-label-md); font-weight: 600; text-align: start; }
+.ui-kpi__icon {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.ui-kpi__value { text-align: start; }
+.ui-kpi__footer { color: var(--color-text-muted); font-size: var(--text-caption); }
+
+/* Tone accents — same shape, different colour, across every role panel. */
+.ui-kpi--primary .ui-kpi__icon { background: var(--color-primary-soft);  color: var(--color-primary); }
+.ui-kpi--success .ui-kpi__icon { background: var(--color-success-soft);  color: var(--color-success); }
+.ui-kpi--warning .ui-kpi__icon { background: var(--color-warning-soft);  color: var(--color-warning); }
+.ui-kpi--danger  .ui-kpi__icon { background: var(--color-danger-soft);   color: var(--color-danger); }
+.ui-kpi--info    .ui-kpi__icon { background: var(--color-info-soft);     color: var(--color-info); }
+
+/* Hover / focus feedback for anything clickable on a dashboard. */
+.ui-kpi--interactive:hover,
+button.ui-kpi:hover,
+.module-card:hover,
+.dashboard-quick-actions__item:hover {
+  transform: translateY(-1px);
+  border-color: var(--color-primary-tint);
+  box-shadow: var(--shadow-md);
+}
+
+.ui-kpi--interactive:active,
+button.ui-kpi:active,
+.module-card:active,
+.dashboard-quick-actions__item:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-xs);
+}
+
+.ui-kpi--interactive:focus-visible,
+button.ui-kpi:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+}
+
+.dashboard-widget {
+  block-size: 100%;
+  transition: border-color var(--duration-fast) var(--easing-standard),
+              box-shadow var(--duration-fast) var(--easing-standard);
+}
+
+.dashboard-widget:hover { border-color: var(--color-border-strong); box-shadow: var(--shadow-sm); }
+
+.dashboard-widget__icon {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+/* Row items inside widgets: full width, start aligned, subtle hover. */
+.dashboard-agenda__item,
+.dashboard-deadlines__item,
+.dashboard-files__item,
+.dashboard-approvals__item,
+.dashboard-upcoming__item,
+.dashboard-breakdown__item,
+.dashboard-quick-actions__item {
+  inline-size: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  transition: background var(--duration-fast) var(--easing-standard),
+              transform var(--duration-fast) var(--easing-standard);
+}
+
+.dashboard-agenda__item:hover,
+.dashboard-deadlines__item:hover,
+.dashboard-files__item:hover,
+.dashboard-approvals__item:hover,
+.dashboard-upcoming__item:hover,
+.dashboard-breakdown__item:not(:disabled):hover { background: var(--color-primary-soft); }
+
+.dashboard-breakdown__item:disabled { cursor: default; }
+
+/* --------------------------------------------------------------------------
+   16. CARD ENTRANCE ANIMATION
+   -------------------------------------------------------------------------- */
+
+@keyframes card-rise {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.ui-kpi,
+.ui-stat-card,
+.dashboard-widget,
+.module-card {
+  animation: card-rise var(--duration-normal) var(--easing-enter) both;
+}
+
+/* A short stagger makes a grid read as one group instead of a single flash. */
+.ui-kpi-grid > *:nth-child(1),
+.stat-grid > *:nth-child(1) { animation-delay: 0ms; }
+.ui-kpi-grid > *:nth-child(2),
+.stat-grid > *:nth-child(2) { animation-delay: 24ms; }
+.ui-kpi-grid > *:nth-child(3),
+.stat-grid > *:nth-child(3) { animation-delay: 48ms; }
+.ui-kpi-grid > *:nth-child(4),
+.stat-grid > *:nth-child(4) { animation-delay: 72ms; }
+.ui-kpi-grid > *:nth-child(5),
+.stat-grid > *:nth-child(5) { animation-delay: 96ms; }
+.ui-kpi-grid > *:nth-child(n + 6),
+.stat-grid > *:nth-child(n + 6) { animation-delay: 120ms; }
+
+/* --------------------------------------------------------------------------
+   17. Motion
+   -------------------------------------------------------------------------- */
+
+/* Shared state finish: the same expanded, pressed and icon geometry is used
+   across forms, menus and actions without changing component behaviour. */
+.ui-button > svg,
+.icon-button > svg,
+.select-trigger > svg,
+.date-trigger > svg,
+.menu-item > svg,
+.quick-actions__item > svg,
+.ui-button .ui-icon,
+.icon-button .ui-icon {
+  flex: 0 0 auto;
+}
+
+.select-trigger[aria-expanded="true"],
+.date-trigger[aria-expanded="true"],
+.ui-menu__trigger[aria-expanded="true"] {
+  border-color: var(--color-primary-tint);
+  background: var(--color-primary-softer);
+  box-shadow: var(--shadow-focus);
+}
+
+.ui-button:not(:disabled):active,
+.icon-button:not(:disabled):active,
+.ui-pagination__control:not(:disabled):active,
+.ui-pagination__page:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+[aria-busy="true"] {
+  cursor: progress;
+}
+
+@media (max-width: 599px) {
+  .ui-button,
+  .icon-button,
+  .select-trigger,
+  .date-trigger,
+  .text-control,
+  .ui-menu__trigger,
+  .ui-pagination__control,
+  .ui-pagination__page,
+  .ui-toolbar__actions .ui-button,
+  .ui-toolbar__filters .ui-button,
+  .filter-row .ui-button,
+  .calendar-nav .ui-button {
+    min-block-size: 2.75rem;
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,5 @@
+import {useState,type ImgHTMLAttributes} from 'react';import {cx} from './utils'
+export type AvatarSize='xs'|'sm'|'md'|'lg'|'xl';export type PresenceStatus='online'|'offline'|'busy'|'away'
+export interface AvatarProps{src?:string;alt:string;name?:string;size?:AvatarSize;status?:PresenceStatus;loading?:boolean;imageProps?:Omit<ImgHTMLAttributes<HTMLImageElement>,'src'|'alt'>;className?:string}
+const initials=(name?:string)=>name?.trim().split(/\s+/).slice(0,2).map((part)=>part.at(0)).join('')||''
+export function Avatar({src,alt,name,size='md',status,loading=false,imageProps,className}:AvatarProps){const [failed,setFailed]=useState(false);return <span className={cx('ui-avatar',`ui-avatar--${size}`,loading&&'ui-avatar--loading',className)} aria-label={alt}>{loading?<span className="skeleton-avatar"/>:src&&!failed?<img src={src} alt={alt} onError={()=>setFailed(true)} {...imageProps}/>:<span aria-hidden="true">{initials(name)||'—'}</span>}{status&&<span className={cx('ui-avatar__status',`ui-avatar__status--${status}`)} aria-label={status==='online'?'آنلاین':status==='busy'?'مشغول':status==='away'?'دور از سیستم':'آفلاین'}/>}</span>}

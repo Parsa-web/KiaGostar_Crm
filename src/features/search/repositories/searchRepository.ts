@@ -1,0 +1,2 @@
+import type { SearchHistory,SearchRepository,SearchResult } from '../types'
+export class InMemorySearchRepository implements SearchRepository { private historyItems:SearchHistory[]=[];constructor(private readonly items:readonly SearchResult[]=[]){ }async all(){return structuredClone(this.items)}async history(userId:string){return structuredClone(this.historyItems.filter((item)=>item.userId===userId))}async addHistory(item:SearchHistory){this.historyItems.push(structuredClone(item));return item} }

@@ -1,0 +1,6 @@
+import {forwardRef,type ElementType,type HTMLAttributes,type ReactNode} from 'react';import {cx} from './utils'
+export type TypographyVariant='display'|'h1'|'h2'|'h3'|'h4'|'h5'|'h6'|'subtitle'|'body-lg'|'body'|'small'|'caption'|'label'|'overline'|'code'
+export type TypographyColor='primary'|'secondary'|'muted'|'inverse'|'success'|'warning'|'danger'|'info'
+export interface TypographyProps extends HTMLAttributes<HTMLElement>{as?:ElementType;variant?:TypographyVariant;color?:TypographyColor;truncate?:boolean;clamp?:1|2|3;selectable?:boolean;children:ReactNode}
+const defaultTags:Record<TypographyVariant,ElementType>={display:'p',h1:'h1',h2:'h2',h3:'h3',h4:'h4',h5:'h5',h6:'h6',subtitle:'p','body-lg':'p',body:'p',small:'small',caption:'span',label:'span',overline:'span',code:'code'}
+export const Typography=forwardRef<HTMLElement,TypographyProps>(function Typography({as,variant='body',color='primary',truncate=false,clamp,selectable=true,className,children,...props},ref){const Component=as??defaultTags[variant];return <Component ref={ref} className={cx('ui-typography',`ui-typography--${variant}`,`ui-typography--${color}`,truncate&&'truncate',clamp&&`line-clamp-${clamp}`,!selectable&&'ui-typography--unselectable',className)} {...props}>{children}</Component>})

@@ -1,0 +1,421 @@
+/* ==========================================================================
+   Chrome pass
+   Motion for charts, the global search bar, radio controls and the card grid
+   geometry. Every rule is token driven so a palette swap keeps working.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Charts — slow, single pass reveal. Bars scale from their own baseline, the
+   line draws itself, the donut sweeps in.
+   -------------------------------------------------------------------------- */
+
+@keyframes chart-bar-grow {
+  from { transform: scaleX(0); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+
+@keyframes chart-line-draw {
+  from { stroke-dashoffset: 1400; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes chart-area-fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes chart-donut-sweep {
+  from { opacity: 0; transform: rotate(-24deg) scale(0.94); }
+  to { opacity: 1; transform: rotate(0) scale(1); }
+}
+
+@keyframes chart-row-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ui-chart__bar-fill {
+  transform-origin: right center;
+  animation: chart-bar-grow 480ms var(--easing-emphasized) both;
+}
+
+[dir='ltr'] .ui-chart__bar-fill { transform-origin: left center; }
+
+.ui-chart__bar-row {
+  animation: chart-row-rise 240ms var(--easing-enter) both;
+}
+
+/* Staggered entry: each row trails the previous one by a hair. */
+.ui-chart__bar-row:nth-child(1) { animation-delay: 0ms; }
+.ui-chart__bar-row:nth-child(1) .ui-chart__bar-fill { animation-delay: 24ms; }
+.ui-chart__bar-row:nth-child(2) { animation-delay: 24ms; }
+.ui-chart__bar-row:nth-child(2) .ui-chart__bar-fill { animation-delay: 48ms; }
+.ui-chart__bar-row:nth-child(3) { animation-delay: 48ms; }
+.ui-chart__bar-row:nth-child(3) .ui-chart__bar-fill { animation-delay: 72ms; }
+.ui-chart__bar-row:nth-child(4) { animation-delay: 72ms; }
+.ui-chart__bar-row:nth-child(4) .ui-chart__bar-fill { animation-delay: 96ms; }
+.ui-chart__bar-row:nth-child(5) { animation-delay: 96ms; }
+.ui-chart__bar-row:nth-child(5) .ui-chart__bar-fill { animation-delay: 120ms; }
+.ui-chart__bar-row:nth-child(6) { animation-delay: 120ms; }
+.ui-chart__bar-row:nth-child(6) .ui-chart__bar-fill { animation-delay: 144ms; }
+.ui-chart__bar-row:nth-child(n + 7) { animation-delay: 144ms; }
+.ui-chart__bar-row:nth-child(n + 7) .ui-chart__bar-fill { animation-delay: 168ms; }
+
+/* Stroked paths draw; filled shapes (area bodies) fade so nothing pops. */
+.ui-chart__svg path[fill='none'],
+.ui-chart__svg polyline {
+  stroke-dasharray: 1400;
+  animation: chart-line-draw 560ms var(--easing-emphasized) both;
+}
+
+.ui-chart__svg polygon,
+.ui-chart__svg path:not([fill='none']) {
+  animation: chart-area-fade 400ms var(--easing-enter) both;
+  animation-delay: 80ms;
+}
+
+.ui-chart__svg circle {
+  animation: chart-area-fade 320ms var(--easing-enter) both;
+  animation-delay: 160ms;
+}
+
+.ui-chart__donut,
+.ui-chart__donut-wrap svg {
+  transform-origin: 50% 50%;
+  animation: chart-donut-sweep 520ms var(--easing-emphasized) both;
+}
+
+.ui-chart__donut circle,
+.ui-chart__donut path {
+  transition: stroke-dashoffset 480ms var(--easing-emphasized), opacity var(--duration-normal) var(--easing-standard);
+}
+
+.ui-chart__legend > * {
+  animation: chart-row-rise 240ms var(--easing-enter) both;
+  animation-delay: 120ms;
+}
+
+/* --------------------------------------------------------------------------
+   Top application bar
+   A single hairline, a soft frosted plate and a warm brand tint on the start
+   edge so the bar reads as chrome rather than as another card.
+   -------------------------------------------------------------------------- */
+
+.app-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--z-header);
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+  border-block-end: 1px solid var(--color-border-muted);
+  background:
+    linear-gradient(90deg, var(--color-bg-primary-subtle) 0%, transparent 34%),
+    color-mix(in srgb, var(--color-surface) 88%, transparent);
+  backdrop-filter: blur(18px) saturate(1.6);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-border-muted) 60%, transparent);
+}
+
+.header-context {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-inline-size: 0;
+}
+
+.header-eyebrow {
+  display: block;
+  color: var(--color-primary);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+}
+
+.header-title {
+  display: block;
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* The bell is an anchor, so it never picks up the `.button` base rules that
+   size and centre `.icon-button`. Without them it rendered as a bare white
+   box; these declarations give it the circular, transparent treatment the
+   rest of the header chrome uses. */
+.notification-button {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full, 999px);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--easing-standard), background var(--duration-fast) var(--easing-standard), color var(--duration-fast) var(--easing-standard);
+}
+
+.notification-button .ui-icon,
+.notification-button svg { flex: none; }
+
+.notification-button:hover {
+  border-color: var(--color-border-muted);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.notification-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.notification-count {
+  position: absolute;
+  inset-block-start: 0.1rem;
+  inset-inline-end: 0.1rem;
+  min-inline-size: 1.05rem;
+  padding-inline: 0.25rem;
+  /* The ring is drawn in the header's own colour so the badge keeps its
+     shape whatever sits behind the bell. */
+  border: 2px solid var(--color-surface);
+  border-radius: var(--radius-full, 999px);
+  background: var(--color-danger, #dc2626);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.05rem;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .app-header { padding-inline: var(--space-4); gap: var(--space-2); }
+  .header-title { font-size: var(--font-size-md, 1rem); }
+  .header-eyebrow { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   Global search bar in the top chrome
+   -------------------------------------------------------------------------- */
+
+.header-search {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-inline-size: clamp(13rem, 26vw, 22rem);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-muted);
+  border-radius: var(--radius-full, 999px);
+  background:
+    linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-muted) 100%);
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  text-align: start;
+  cursor: pointer;
+  box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.05));
+  transition: border-color var(--duration-fast) var(--easing-standard), box-shadow var(--duration-fast) var(--easing-standard), background var(--duration-fast) var(--easing-standard),
+    color var(--duration-fast) var(--easing-standard), transform var(--duration-fast) var(--easing-standard);
+}
+
+.header-search > span {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.header-search .ui-icon,
+.header-search svg {
+  flex: none;
+  color: var(--color-primary);
+  opacity: 0.85;
+}
+
+.header-search:hover {
+  border-color: var(--color-border-strong, var(--color-primary));
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm, 0 4px 12px rgba(15, 23, 42, 0.08));
+  transform: translateY(-1px);
+}
+
+.header-search:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.header-search__keys {
+  flex: none;
+  padding: 0.15rem var(--space-2);
+  border: 1px solid var(--color-border-muted);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--color-bg-primary-subtle, var(--color-surface-muted));
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: var(--font-size-xs);
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .header-search { min-inline-size: 0; }
+  .header-search > span,
+  .header-search__keys { display: none; }
+  .header-search { padding: var(--space-2); border-radius: var(--radius-md, 10px); }
+}
+
+/* --------------------------------------------------------------------------
+   Radio controls
+   -------------------------------------------------------------------------- */
+
+.radio-group {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.radio-group[data-orientation='horizontal'],
+.radio-group--inline {
+  grid-auto-flow: column;
+  justify-content: start;
+  gap: var(--space-4);
+}
+
+input[type='radio'] {
+  appearance: none;
+  -webkit-appearance: none;
+  inline-size: 1.15rem;
+  block-size: 1.15rem;
+  margin: 0;
+  border: 1.5px solid var(--color-border-strong, var(--color-border));
+  border-radius: 50%;
+  background: var(--color-surface);
+  cursor: pointer;
+  display: inline-grid;
+  place-content: center;
+  flex: none;
+  transition: border-color var(--duration-fast) var(--easing-standard), box-shadow var(--duration-fast) var(--easing-standard), background var(--duration-fast) var(--easing-standard);
+}
+
+input[type='radio']::before {
+  content: '';
+  inline-size: 0.55rem;
+  block-size: 0.55rem;
+  border-radius: 50%;
+  background: var(--color-primary-contrast, #fff);
+  transform: scale(0);
+  transition: transform var(--duration-fast) var(--easing-emphasized);
+}
+
+input[type='radio']:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+input[type='radio']:checked {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+}
+
+input[type='radio']:checked::before { transform: scale(1); }
+
+input[type='radio']:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+input[type='radio']:disabled {
+  border-color: var(--color-border-muted);
+  background: var(--color-surface-muted);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* --------------------------------------------------------------------------
+   Card rows always fill their track
+   A lone card spans the full row; two cards split it in half; the rest follow
+   the same rule, so no orphan card ever floats at half width.
+   -------------------------------------------------------------------------- */
+
+.ui-kpi-grid,
+.module-card-grid,
+.module-grid--cards {
+  display: grid;
+  gap: var(--app-card-gap, var(--space-4));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  align-items: start;
+}
+
+.ui-kpi-grid > *,
+.module-card-grid > *,
+.module-grid--cards > * {
+  min-inline-size: 0;
+}
+
+/* Dashboard KPI cards keep their original equal-height behaviour. */
+.ui-kpi-grid { align-items: stretch; }
+.ui-kpi-grid > * { block-size: 100%; }
+
+.ui-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  block-size: 100%;
+  text-align: start;
+}
+
+.ui-kpi__footer { margin-block-start: auto; }
+
+/* A single widget in a dashboard row stretches instead of leaving dead space. */
+.dashboard-grid > .dashboard-widget:only-child { grid-column: 1 / -1; }
+
+@media (max-width: 900px) {
+  .ui-kpi-grid,
+  .module-card-grid,
+  .module-grid--cards {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .ui-kpi-grid,
+  .module-card-grid,
+  .module-grid--cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Motion preferences win over everything above.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-chart__bar-fill,
+  .ui-chart__bar-row,
+  .ui-chart__svg path,
+  .ui-chart__svg polyline,
+  .ui-chart__svg polygon,
+  .ui-chart__svg circle,
+  .ui-chart__donut,
+  .ui-chart__donut-wrap svg,
+  .ui-chart__legend > * {
+    animation: none !important;
+  }
+
+  .ui-chart__svg path,
+  .ui-chart__svg polyline { stroke-dasharray: none; }
+
+  .header-search:hover { transform: none; }
+}

@@ -1,0 +1,1 @@
+export function RouteLoading(){return <div className="page-container route-loading" role="status" aria-label="در حال بارگذاری صفحه"><div className="page-header skeleton"><div className="skeleton-line"/><div className="skeleton-line"/></div><div className="card-grid"><div className="skeleton-block"/><div className="skeleton-block"/><div className="skeleton-block"/></div></div>}

@@ -1,0 +1,2 @@
+import { can, hasRole } from './permissionService'; import type { AccessRequirement, AuthorizationSubject } from './types'
+export const checkAccess=(subject:AuthorizationSubject|null|undefined,requirement:AccessRequirement={})=>Boolean(subject && (!requirement.roles?.length || requirement.roles.some((role)=>hasRole(subject,role))) && (!requirement.permissions?.length || requirement.permissions.every((permission)=>can(subject,permission))))

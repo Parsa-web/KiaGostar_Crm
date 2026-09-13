@@ -1,0 +1,4 @@
+import { useCallback, useRef, useState } from 'react'
+import { normalizeError, type AppErrorShape } from '../core/errors'
+export interface AsyncState<T> { data: T | null; loading: boolean; error: AppErrorShape | null }
+export function useAsyncState<T>() { const [state, setState] = useState<AsyncState<T>>({ data: null, loading: false, error: null }); const active = useRef<Promise<T> | undefined>(undefined); const execute = useCallback(async (operation: () => Promise<T>) => { if (active.current) return active.current; setState((value) => ({ ...value, loading: true, error: null })); const promise = operation(); active.current = promise; try { const data = await promise; setState({ data, loading: false, error: null }); return data } catch (error) { setState({ data: null, loading: false, error: normalizeError(error) }); throw error } finally { active.current = undefined } }, []); return { ...state, execute } }

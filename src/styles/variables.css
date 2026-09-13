@@ -1,0 +1,440 @@
+/* ==========================================================================
+   Design Tokens — Single Source of Truth
+   Blue-led SaaS dashboard palette. Every token used anywhere in the codebase
+   is defined here. No other file should redefine :root tokens.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* ======================================================================
+     RAW PALETTE — the requested names, with the requested values.
+     Everything below is expressed in terms of these, so a future palette
+     swap only has to touch this one block.
+     ====================================================================== */
+  --primary: #2563EB;
+  --primary-light: #3B82F6;
+  --primary-dark: #1D4ED8;
+  --primary-darker: #1E40AF;
+
+  --success: #16A34A;
+  --success-mid: #059669;
+  --success-light: #10B981;
+  --success-dark: #166534;
+
+  --warning: #F59E0B;
+  --warning-dark: #92400E;
+
+  --danger: #DC2626;
+  --danger-dark: #B91C1C;
+
+  --text: #0F172A;
+  --text-secondary: #64748B;
+  --text-muted: #475569;
+  --text-tertiary: #94A3B8;
+  --text-on-primary: #FFFFFF;
+
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --bg-muted: #F1F5F9;
+  --border: #E2E8F0;
+  --border-hover: #CBD5E1;
+
+  --bg-primary-subtle: #EFF6FF;
+  --bg-success-subtle: #F0FDF4;
+  --bg-danger-subtle: #FEF2F2;
+  --bg-warning-subtle: #FFF7ED;
+
+  --bg-primary: rgba(37, 99, 235, 0.08);
+  --bg-success: rgba(22, 163, 74, 0.1);
+  --bg-danger: rgba(220, 38, 38, 0.1);
+  --bg-warning: rgba(245, 158, 11, 0.1);
+  --border-primary: rgba(37, 99, 235, 0.12);
+
+  /* Extended ramp used by charts, accents and illustrations. */
+  --blue-950: #0B1120;
+  --blue-900: #1E3A8A;
+  --blue-300: #93C5FD;
+  --blue-200: #BFDBFE;
+  --blue-100: #DBEAFE;
+  --indigo-600: #4F46E5;
+  --indigo-500: #6366F1;
+  --violet-600: #7C3AED;
+  --violet-500: #8B5CF6;
+  --violet-50: #F5F3FF;
+  --cyan-600: #0891B2;
+  --cyan-500: #06B6D4;
+  --green-500: #22C55E;
+  --green-200: #BBF7D0;
+  --amber-400: #FBBF24;
+  --amber-200: #FDE68A;
+  --red-500: #EF4444;
+  --red-200: #FECACA;
+  --slate-800: #1E293B;
+  --slate-700: #334155;
+
+  /* Accessible categorical palette: state is also repeated as text in legends. */
+  --color-chart-1: #16835B;
+  --color-chart-2: #2563EB;
+  --color-chart-3: #C26A09;
+  --color-chart-4: #D14343;
+  --color-chart-5: #7C3AED;
+  --color-chart-6: #087F8C;
+
+  /* ===== Brand / Primary ===== */
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-dark);
+  --color-primary-active: var(--primary-darker);
+  --color-primary-soft: var(--bg-primary-subtle);
+  --color-bg-primary-subtle: var(--color-primary-soft);
+  --color-primary-softer: #F6FAFF;
+  --color-primary-tint: var(--blue-300);
+  --color-primary-contrast: var(--text-on-primary);
+
+  /* ===== Secondary (indigo) ===== */
+  --color-secondary: var(--indigo-600);
+  --color-secondary-hover: #4338CA;
+  --color-secondary-active: #3730A3;
+  --color-secondary-soft: #EEF2FF;
+  --color-secondary-tint: #C7D2FE;
+  --color-secondary-contrast: #FFFFFF;
+
+  /* ===== Accent (violet / amber / cyan for variety) ===== */
+  --color-accent-lilac: var(--violet-600);
+  --color-accent-lilac-soft: var(--violet-50);
+  --color-accent-peach: #D97706;
+  --color-accent-peach-soft: var(--bg-warning-subtle);
+  --color-accent-sky: var(--cyan-600);
+  --color-accent-sky-soft: #ECFEFF;
+
+  /* ===== Backgrounds ===== */
+  --color-background: var(--bg);
+  --color-background-subtle: #FCFDFE;
+  --color-background-muted: var(--bg-muted);
+  --color-background-elevated: var(--surface);
+  --color-background-overlay: rgba(15, 23, 42, 0.45);
+
+  /* ===== Surfaces ===== */
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--bg);
+  --color-surface-active: var(--bg-muted);
+  --color-surface-selected: var(--bg-primary-subtle);
+  --color-surface-disabled: var(--bg-muted);
+
+  /* ===== Text =====
+     `--text-secondary` (#64748B) is lighter than `--text-muted` (#475569), so
+     the component-facing aliases are crossed over to keep the visual hierarchy
+     primary → secondary → muted → disabled going from dark to light. */
+  --color-text-primary: var(--text);
+  --color-text: var(--color-text-primary);
+  --color-text-secondary: var(--text-muted);
+  --color-text-muted: var(--text-secondary);
+  --color-text-disabled: var(--text-tertiary);
+  --color-text-inverse: var(--text-on-primary);
+  --color-text-link: var(--primary);
+  --color-text-link-hover: var(--primary-dark);
+
+  /* ===== Borders ===== */
+  --color-border: var(--border);
+  --color-border-muted: #EDF2F7;
+  --color-border-strong: var(--border-hover);
+  --color-border-focus: var(--primary);
+  --color-border-disabled: var(--border);
+
+  /* ===== Status ===== */
+  --color-success: var(--success);
+  --color-success-soft: var(--bg-success-subtle);
+  --color-success-border: var(--green-200);
+  --color-success-text: var(--success-dark);
+
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--bg-warning-subtle);
+  --color-warning-border: var(--amber-200);
+  --color-warning-text: var(--warning-dark);
+
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--bg-danger-subtle);
+  --color-danger-border: var(--red-200);
+  --color-danger-text: var(--danger-dark);
+
+  --color-info: var(--primary);
+  --color-info-soft: var(--bg-primary-subtle);
+  --color-info-border: var(--blue-200);
+  --color-info-text: var(--primary-darker);
+
+  /* ===== Interaction ===== */
+  --color-hover: var(--bg-primary);
+  --color-active: var(--border-primary);
+  --color-focus-ring: rgba(37, 99, 235, 0.18);
+  --color-selection: var(--blue-100);
+  --color-disabled: var(--border);
+
+  /* ===== Status aliases (consumed by data-display components) ===== */
+  --status-neutral-bg: var(--bg-muted);
+  --status-neutral-border: var(--border);
+  --status-neutral-text: var(--text-muted);
+
+  --status-info-bg: var(--color-info-soft);
+  --status-info-border: var(--color-info-border);
+  --status-info-text: var(--color-info-text);
+  --status-success-bg: var(--color-success-soft);
+  --status-success-border: var(--color-success-border);
+  --status-success-text: var(--color-success-text);
+  --status-warning-bg: var(--color-warning-soft);
+  --status-warning-border: var(--color-warning-border);
+  --status-warning-text: var(--color-warning-text);
+  --status-danger-bg: var(--color-danger-soft);
+  --status-danger-border: var(--color-danger-border);
+  --status-danger-text: var(--color-danger-text);
+
+  /* ===== Gradients (restrained) ===== */
+  --gradient-brand: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-darker) 100%);
+  --gradient-brand-soft: linear-gradient(135deg, var(--bg-primary-subtle) 0%, #EEF2FF 100%);
+  --gradient-surface: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+  --gradient-page:
+    radial-gradient(58rem 32rem at 92% -8%, rgba(37, 99, 235, 0.06), transparent 62%),
+    radial-gradient(52rem 30rem at 4% 2%, rgba(99, 102, 241, 0.05), transparent 60%);
+
+
+  /* ===== Typography ===== */
+  --font-family-base: 'Shabnam', Tahoma, Arial, sans-serif;
+  --font-family-heading: var(--font-family-base);
+  --font-family-mono: Consolas, "Courier New", monospace;
+
+  --text-display-lg: clamp(1.6rem, 2.8vw, 2rem);
+  --text-display-md: clamp(1.35rem, 2.1vw, 1.65rem);
+  --text-h1: clamp(1.2rem, 1.8vw, 1.45rem);
+  --text-h2: 1.125rem;
+  --text-h3: 1rem;
+  --text-h4: 0.9375rem;
+
+  --text-title-lg: 1.0625rem;
+  --text-title-md: 0.9375rem;
+  --text-title-sm: 0.875rem;
+  --text-body-lg: 0.9375rem;
+  --text-body-md: 0.875rem;
+  --text-body-sm: 0.8125rem;
+  --text-label-lg: 0.875rem;
+  --text-label-md: 0.8125rem;
+  --text-label-sm: 0.75rem;
+  --text-caption: 0.75rem;
+
+  /* ===== Font size aliases ===== */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-md: 0.875rem;
+  --font-size-lg: 1rem;
+  --font-size-xl: 1.25rem;
+
+  /* ===== Font weight aliases ===== */
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ===== Line height ===== */
+  --line-height-relaxed: 1.7;
+
+  /* ===== Spacing ===== */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 1.75rem;
+  --space-8: 2rem;
+  --space-9: 2.25rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+
+  /* ===== Radius ===== */
+  --radius-none: 0;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-full: 999rem;
+  --radius-pill: var(--radius-full);
+
+  /* ===== Shadows (restrained — borders do the work) ===== */
+  --shadow-none: none;
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.07);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.1);
+  --shadow-xl: 0 24px 52px rgba(15, 23, 42, 0.12);
+  --shadow-floating: 0 8px 24px rgba(15, 23, 42, 0.1);
+  --shadow-modal: 0 20px 60px rgba(15, 23, 42, 0.18);
+  --shadow-focus: 0 0 0 3px var(--color-focus-ring);
+  --shadow-primary: 0 4px 12px rgba(37, 99, 235, 0.18);
+
+
+  /* ===== Borders ===== */
+  --border-width-thin: 1px;
+  --border-width-medium: 2px;
+  --border-style-default: solid;
+
+  /* ===== Z-index ===== */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-header: 20;
+  --z-sidebar: 30;
+  --z-dropdown: 40;
+  --z-popover: 50;
+  --z-drawer: 60;
+  --z-modal: 70;
+  --z-toast: 80;
+  --z-tooltip: 90;
+
+  /* ===== Motion ===== */
+  --duration-fast: 140ms;
+  --duration-normal: 220ms;
+  --duration-slow: 340ms;
+  --easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --easing-enter: cubic-bezier(0, 0, 0.2, 1);
+  --easing-exit: cubic-bezier(0.4, 0, 1, 1);
+  --easing-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --motion-fast: var(--duration-fast);
+
+  /* ===== Shared control geometry ===== */
+  --control-height-sm: 2.125rem;
+  --control-height-md: 2.5rem;
+
+  /* ===== App layout ===== */
+  --app-sidebar-width: 16.5rem;
+  --app-sidebar-collapsed-width: 4.75rem;
+  --app-header-height: 3.5rem;
+  --app-content-max-width: 90rem;
+  --app-page-padding-inline: clamp(1rem, 2vw, 1.5rem);
+  --app-page-padding-block: clamp(1rem, 1.5vw, 1.25rem);
+  --app-section-gap: 1.5rem;
+  --app-card-gap: 1rem;
+
+  /* ===== Aliases consumed by shared Design-System layer ===== */
+  --color-on-primary: var(--color-primary-contrast);
+  --color-primary-surface: var(--color-primary-soft);
+  --color-success-surface: var(--color-success-soft);
+  --color-warning-surface: var(--color-warning-soft);
+  --color-danger-surface: var(--color-danger-soft);
+  --color-surface-muted: var(--color-background-muted);
+  --color-surface-subtle: var(--color-background-subtle);
+  --color-border-subtle: var(--color-border-muted);
+  --color-focus: var(--color-border-focus);
+  --focus-ring-width: 2px;
+}
+
+/* Appearance variants live beside the core tokens so Vite never has to resolve
+   a late-created theme stylesheet during HMR. Components still consume only
+   semantic variables. */
+[data-theme='neutral'] {
+  --color-background: #F6F8FB;
+  --color-background-subtle: #FAFBFD;
+  --color-primary-soft: #EAF1FC;
+  --color-surface-selected: #EAF1FC;
+}
+
+[data-color-scheme='dark'] {
+  color-scheme: dark;
+  --primary: #6EA8FE;
+  --primary-light: #8BB9FF;
+  --primary-dark: #4E8DEB;
+  --primary-darker: #2E6BC6;
+  --text: #F2F6FC;
+  --text-muted: #C2CEDD;
+  --text-secondary: #98A8BC;
+  --text-tertiary: #718198;
+  --bg: #0A111C;
+  --surface: #111B2A;
+  --bg-muted: #172337;
+  --border: #29384C;
+  --border-hover: #40516A;
+  --bg-primary-subtle: #142A49;
+  --bg-success-subtle: #102D25;
+  --bg-danger-subtle: #351B23;
+  --bg-warning-subtle: #352711;
+  --color-background: var(--bg);
+  --color-background-subtle: #0D1623;
+  --color-background-muted: var(--bg-muted);
+  --color-background-elevated: var(--surface);
+  --color-background-overlay: rgba(0,0,0,.66);
+  --color-surface: var(--surface);
+  --color-surface-hover: #172337;
+  --color-surface-active: #1C2A40;
+  --color-surface-selected: #142A49;
+  --color-surface-disabled: #172337;
+  --color-primary-soft: #142A49;
+  --color-primary-softer: #10213A;
+  --color-secondary-soft: #20264A;
+  --color-accent-lilac-soft: #2A2045;
+  --color-accent-peach-soft: #352711;
+  --color-accent-sky-soft: #0F2E35;
+  --color-text-primary: var(--text);
+  --color-text-secondary: var(--text-muted);
+  --color-text-muted: var(--text-secondary);
+  --color-text-disabled: var(--text-tertiary);
+  --color-text-link: #8BB9FF;
+  --color-text-link-hover: #B1CEFF;
+  --color-border: var(--border);
+  --color-border-muted: #223047;
+  --color-border-strong: var(--border-hover);
+  --color-focus-ring: rgba(110,168,254,.3);
+  --color-selection: #25466F;
+  --color-success: #43C58A;
+  --color-success-soft: #102D25;
+  --color-success-border: #225E49;
+  --color-success-text: #8BE0B7;
+  --color-warning: #F0B44D;
+  --color-warning-soft: #352711;
+  --color-warning-border: #665027;
+  --color-warning-text: #F6CF83;
+  --color-danger: #F07078;
+  --color-danger-soft: #351B23;
+  --color-danger-border: #6C3541;
+  --color-danger-text: #FFABB0;
+  --color-info: #6EA8FE;
+  --color-info-soft: #142A49;
+  --color-info-border: #315B8D;
+  --color-info-text: #A8C9FF;
+  --status-neutral-bg: #1A2639;
+  --status-neutral-border: #33445B;
+  --status-neutral-text: #C2CEDD;
+  --color-chart-1: #43C58A;
+  --color-chart-2: #72A9FF;
+  --color-chart-3: #F0B44D;
+  --color-chart-4: #F07078;
+  --color-chart-5: #B08CF4;
+  --color-chart-6: #45BBC8;
+  --gradient-page: radial-gradient(52rem 28rem at 92% -8%,rgba(78,141,235,.09),transparent 62%);
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.18);
+  --shadow-sm: 0 2px 5px rgba(0,0,0,.2);
+  --shadow-md: 0 8px 20px rgba(0,0,0,.22);
+  --shadow-lg: 0 16px 38px rgba(0,0,0,.28);
+}
+
+[data-color-scheme='dark'][data-theme='neutral'] {
+  --color-background: #0D131D;
+  --color-background-subtle: #101824;
+  --color-surface: #151E2B;
+  --color-primary-soft: #182944;
+}
+
+[data-font='system'] {
+  --font-family-base: Tahoma, Arial, sans-serif;
+  --font-family-heading: var(--font-family-base);
+}
+
+[data-density='compact'] {
+  --app-page-padding-block: .75rem;
+  --app-section-gap: 1rem;
+  --app-card-gap: .75rem;
+  --control-height-md: 2.25rem;
+}
+
+[data-density='compact'] .card,
+[data-density='compact'] .dashboard-widget__body,
+[data-density='compact'] .dashboard-widget__header { padding: var(--space-3); }

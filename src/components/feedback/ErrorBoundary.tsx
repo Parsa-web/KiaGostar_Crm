@@ -1,0 +1,2 @@
+import {Component,type ErrorInfo,type ReactNode} from 'react';import {handleError} from '../../core/errors';import {GenericErrorPage} from '../../app/routes/StatePages'
+export class ErrorBoundary extends Component<{children:ReactNode},{failed:boolean}>{state={failed:false};static getDerivedStateFromError(){return{failed:true}}componentDidCatch(error:Error,info:ErrorInfo){handleError(error,{componentStack:info.componentStack})}render(){return this.state.failed?<GenericErrorPage onRetry={()=>this.setState({failed:false})}/>:this.props.children}}

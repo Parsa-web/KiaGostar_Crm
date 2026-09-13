@@ -1,0 +1,14 @@
+export interface UserEntity { id:string;firstName:string;lastName:string;phone?:string;email?:string;roleId:string;departmentId?:string;status:string;createdAt:string;updatedAt:string }
+export interface RoleEntity { id:string;name:string;code:'MAIN_MANAGER'|'DEPARTMENT_MANAGER'|'EMPLOYEE'|'SECRETARY';permissions:string[] }
+export interface PermissionEntity { id:string;code:string;description?:string }
+export interface DepartmentEntity { id:string;name:string;managerId:string;parentId?:string;status:string }
+export interface MeetingEntity { id:string;title:string;description?:string;createdBy:string;participants:string[];date:string;status:string }
+export interface MinutesEntity { id:string;meetingId:string;transcript?:string;content:string;createdBy:string;status:'DRAFT'|'UNDER_REVIEW'|'FINALIZED';createdAt:string }
+export interface DecisionEntity { id:string;meetingId:string;title:string;description:string;createdBy:string;status:string }
+export interface TaskEntity { id:string;decisionId?:string;title:string;description:string;assignedTo:string;createdBy:string;status:string;deadline?:string }
+export interface ReportEntity { id:string;createdBy:string;departmentId:string;content:string;status:string;files:string[];createdAt:string }
+export interface RequestEntity { id:string;createdBy:string;departmentId?:string;type:string;description:string;status:string }
+export interface FileEntity { id:string;name:string;originalName:string;size:number;mimeType:string;url:string;storageKey:string;uploadedBy:string;entityType:string;entityId:string;visibility:string;createdAt:string;updatedAt:string }
+export interface NotificationEntity { id:string;userId:string;title:string;message:string;priority:'LOW'|'NORMAL'|'HIGH'|'CRITICAL';read:boolean;createdAt:string }
+export interface KnowledgeArticleEntity { id:string;title:string;content:string;category:string;createdBy:string;departmentId?:string;status:'DRAFT'|'UNDER_REVIEW'|'PUBLISHED'|'ARCHIVED';createdAt:string;updatedAt:string }
+export interface AutomationRuleEntity { id:string;name:string;trigger:string;enabled:boolean;createdBy:string }
