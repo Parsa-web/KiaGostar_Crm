@@ -46,16 +46,8 @@ function reqToPromise<T>(request: IDBRequest<T>): Promise<T> {
   })
 }
 
-/**
- * Wait for an IDBTransaction to finish.
- * In modern browsers tx.done is a Promise; fall back to the
- * IDBRequest-based `complete` event for older engines.
- */
+/** Waits for an IDBTransaction to finish using the standard DOM events. */
 function waitForTx(tx: IDBTransaction): Promise<void> {
-  // Modern spec: tx.done is a Promise<void>
-  if (tx.done && typeof (tx.done as Promise<void>).then === 'function') {
-    return tx.done.catch(() => { /* transaction aborted — caller handles */ })
-  }
   return new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve()
     tx.onabort = () => reject(tx.error)
@@ -127,8 +119,8 @@ export async function saveTopicSegments(segments: readonly TopicSegment[]): Prom
     const tx = db.transaction(SEGMENTS_STORE, 'readwrite')
     const store = tx.objectStore(SEGMENTS_STORE)
     const index = store.index('meetingId')
-    // Collect keys to delete via a cursor
-    const keysToDelete = await reqToPromise<string[]>(index.getAllKeys(meetingId))
+    // Collect keys to delete
+    const keysToDelete = await reqToPromise<IDBValidKey[]>(index.getAllKeys(meetingId))
     for (const key of keysToDelete) {
       store.delete(key)
     }
