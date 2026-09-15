@@ -1,17 +1,20 @@
 /**
  * useSpeechDictation — live Persian speech-to-text on the Web Speech API.
  *
- * Ordering matters: SpeechRecognition must own the microphone. We do NOT open
- * a getUserMedia capture before it, because a second capture of the same
- * device can starve the recognizer (mic active, zero results). The level meter
- * is opportunistic: it attaches after the first recognised result and is
- * dropped silently if the browser refuses a second stream.
+ * DEVICE OWNERSHIP RULE (do not break this):
+ * SpeechRecognition is the ONLY consumer of the microphone here. We never open
+ * a getUserMedia capture of the same device — not before the session, not
+ * afterwards for a level meter. A second capture leaves the first session
+ * working but starves every later one (silence timeout, session rotation),
+ * which looks exactly like "the mic hears me but nothing is transcribed".
+ * The level meter is therefore derived from the recognizer's own speech
+ * events instead of from raw audio.
  *
  * Session lifecycle: every relaunch goes through one scheduler guarded by a
- * generation counter, so handlers belonging to a superseded session can never
- * spawn a competing recognition object. Sessions that end after a successful
- * start (normal silence timeout) are free to relaunch; only sessions that
- * never started count towards the failure limit.
+ * generation counter, so handlers of a superseded session can never spawn a
+ * competing recognition object. Sessions that end after a successful start
+ * (normal silence timeout) relaunch freely; only sessions that never started
+ * count towards the failure limit.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { convertDictation, previewDictation } from '../utils/persianDictation'
@@ -35,7 +38,12 @@ interface SpeechRecognitionLike {
   onend: (() => void) | null
   onresult: ((event: SpeechEventLike) => void) | null
   onerror: ((event: SpeechErrorEventLike) => void) | null
-  onspeechstart?: (() => void) | null
+  onaudiostart: (() => void) | null
+  onsoundstart: (() => void) | null
+  onsoundend: (() => void) | null
+  onspeechstart: (() => void) | null
+  onspeechend: (() => void) | null
+  onnomatch: (() => void) | null
 }
 type SpeechRecognitionCtor = new () => SpeechRecognitionLike
 
@@ -67,6 +75,16 @@ const DEAD_AFTER_MS = 20000
 const ROTATE_AFTER_MS = 50000
 /** Consecutive sessions that never reached onstart before giving up. */
 const MAX_FAILED_STARTS = 6
+/**
+ * Noise gate: a final hypothesis of one or two words whose reported confidence
+ * is this low is an artefact of background noise, not speech. Zero confidence
+ * is NOT filtered, because Chrome legitimately reports 0 for many finals.
+ */
+const NOISE_CONFIDENCE_FLOOR = 0.12
+const NOISE_MAX_WORDS = 2
+/** Meter value while the recognizer reports active speech. */
+const SPEAKING_LEVEL = 0.95
+const QUIET_LEVEL = 0.05
 
 export interface UseSpeechDictationOptions {
   lang?: string
@@ -80,6 +98,7 @@ export interface UseSpeechDictationResult {
   supported: boolean
   status: DictationStatus
   listening: boolean
+  /** Speech-activity level derived from the recognizer, not from a raw capture. */
   level: number
   confidence: number | null
   /** Fatal problem; dictation stopped. */
@@ -106,16 +125,12 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
   const wantedRef = useRef(false)
   /** Incremented whenever a session is superseded; stale handlers bail out. */
   const generationRef = useRef(0)
-  const streamRef = useRef<MediaStream | null>(null)
-  const audioContextRef = useRef<AudioContext | null>(null)
-  const frameRef = useRef(0)
-  const levelRef = useRef(0)
-  const meterRequestedRef = useRef(false)
   const restartTimerRef = useRef(0)
   const watchdogRef = useRef(0)
   const failedStartsRef = useRef(0)
   const startedRef = useRef(false)
   const lastEventAtRef = useRef(0)
+  const lastSpeechAtRef = useRef(0)
   const sessionStartedAtRef = useRef(0)
   const hasInterimRef = useRef(false)
   const carryRef = useRef('')
@@ -126,69 +141,6 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
   useEffect(() => {
     interimRef.current = onInterim
   }, [onInterim])
-
-  const stopMeter = useCallback(() => {
-    if (frameRef.current) {
-      cancelAnimationFrame(frameRef.current)
-      frameRef.current = 0
-    }
-    const context = audioContextRef.current
-    audioContextRef.current = null
-    if (context) void context.close().catch(() => undefined)
-    streamRef.current?.getTracks().forEach((track) => {
-      try {
-        track.stop()
-      } catch {
-        /* noop */
-      }
-    })
-    streamRef.current = null
-    meterRequestedRef.current = false
-    levelRef.current = 0
-    setLevel(0)
-  }, [])
-
-  /**
-   * Opportunistic input-level meter. Started only after recognition is proven
-   * to work, so it can never compete with the recognizer for the device.
-   */
-  const attachMeter = useCallback(() => {
-    if (meterRequestedRef.current || !navigator.mediaDevices?.getUserMedia) return
-    meterRequestedRef.current = true
-    void navigator.mediaDevices
-      .getUserMedia({ audio: { noiseSuppression: true, echoCancellation: true, autoGainControl: true, channelCount: 1 } })
-      .then((stream) => {
-        if (!wantedRef.current) {
-          stream.getTracks().forEach((track) => track.stop())
-          return
-        }
-        streamRef.current = stream
-        const AudioCtor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
-        if (!AudioCtor) return
-        const context = new AudioCtor()
-        audioContextRef.current = context
-        const analyser = context.createAnalyser()
-        analyser.fftSize = 1024
-        analyser.smoothingTimeConstant = 0.8
-        context.createMediaStreamSource(stream).connect(analyser)
-        const buffer = new Float32Array(analyser.fftSize)
-        const tick = () => {
-          analyser.getFloatTimeDomainData(buffer)
-          let sum = 0
-          for (let i = 0; i < buffer.length; i += 1) sum += buffer[i] * buffer[i]
-          const next = Math.min(1, Math.sqrt(sum / buffer.length) * 4)
-          if (Math.abs(next - levelRef.current) > 0.04) {
-            levelRef.current = next
-            setLevel(next)
-          }
-          frameRef.current = requestAnimationFrame(tick)
-        }
-        frameRef.current = requestAnimationFrame(tick)
-      })
-      .catch(() => {
-        /* No meter. Recognition keeps working, which is what matters. */
-      })
-  }, [])
 
   /** Single relaunch scheduler: one pending timer, ever. */
   const scheduleRelaunch = useCallback((delay: number) => {
@@ -207,7 +159,9 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
       recognition.lang = lang
       recognition.continuous = true
       recognition.interimResults = true
-      recognition.maxAlternatives = 3
+      // More hypotheses give the confidence-based picker a better chance in a
+      // noisy room; only the best one is ever used.
+      recognition.maxAlternatives = 5
       startedRef.current = false
       lastEventAtRef.current = Date.now()
 
@@ -223,10 +177,45 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
         setNotice(null)
       }
 
-      recognition.onresult = (event) => {
+      recognition.onaudiostart = () => {
+        if (isCurrent()) lastEventAtRef.current = Date.now()
+      }
+
+      // Speech activity drives the meter. No audio capture, no contention.
+      recognition.onspeechstart = () => {
         if (!isCurrent()) return
         lastEventAtRef.current = Date.now()
-        attachMeter()
+        lastSpeechAtRef.current = Date.now()
+        setLevel(SPEAKING_LEVEL)
+      }
+
+      recognition.onspeechend = () => {
+        if (!isCurrent()) return
+        lastEventAtRef.current = Date.now()
+        setLevel(QUIET_LEVEL)
+      }
+
+      recognition.onsoundstart = () => {
+        if (isCurrent()) lastEventAtRef.current = Date.now()
+      }
+
+      recognition.onsoundend = () => {
+        if (isCurrent()) lastEventAtRef.current = Date.now()
+      }
+
+      // Pure noise produces nomatch. It is not an error and must not restart
+      // or reset anything.
+      recognition.onnomatch = () => {
+        if (isCurrent()) lastEventAtRef.current = Date.now()
+      }
+
+      recognition.onresult = (event) => {
+        if (!isCurrent()) return
+        const now = Date.now()
+        lastEventAtRef.current = now
+        lastSpeechAtRef.current = now
+        setLevel(SPEAKING_LEVEL)
+
         let pending = ''
         let finalised = ''
         let lastConfidence: number | null = null
@@ -238,8 +227,13 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
             if (candidate && candidate.confidence > best.confidence) best = candidate
           }
           if (!best) continue
+          const transcript = best.transcript.trim()
+          if (!transcript) continue
           if (result.isFinal) {
-            finalised += `${best.transcript} `
+            const words = transcript.split(/\s+/).length
+            const noise = best.confidence > 0 && best.confidence < NOISE_CONFIDENCE_FLOOR && words <= NOISE_MAX_WORDS
+            if (noise) continue
+            finalised += `${transcript} `
             lastConfidence = best.confidence
           } else {
             pending += best.transcript
@@ -281,6 +275,7 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
       recognition.onend = () => {
         if (!isCurrent()) return
         recognitionRef.current = null
+        setLevel(QUIET_LEVEL)
         if (hasInterimRef.current) {
           hasInterimRef.current = false
           interimRef.current('')
@@ -318,7 +313,7 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
         scheduleRelaunch(400)
       }
     },
-    [attachMeter, lang, scheduleRelaunch],
+    [lang, scheduleRelaunch],
   )
 
   useEffect(() => {
@@ -355,14 +350,16 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
     setError(null)
     setNotice(null)
     setConfidence(null)
+    setLevel(QUIET_LEVEL)
     setStatus('starting')
-    // Recognition first: it must own the microphone.
     launchRef.current?.(generationRef.current)
 
     if (watchdogRef.current) window.clearInterval(watchdogRef.current)
     watchdogRef.current = window.setInterval(() => {
       if (!wantedRef.current) return
       const now = Date.now()
+      // Let the meter fall back to quiet when speech stops without an event.
+      if (now - lastSpeechAtRef.current > 1500) setLevel((previous) => (previous > QUIET_LEVEL ? QUIET_LEVEL : previous))
       if (!recognitionRef.current) {
         if (!restartTimerRef.current) scheduleRelaunch(200)
         return
@@ -407,10 +404,10 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
         }
       }
     }
-    stopMeter()
+    setLevel(0)
     setNotice(null)
     setStatus((previous) => (previous === 'error' ? previous : 'idle'))
-  }, [stopMeter])
+  }, [])
 
   const toggle = useCallback(() => {
     if (wantedRef.current) stop()
