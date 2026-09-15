@@ -1,29 +1,160 @@
-/* Live dictation controls attached to a TextArea.
-   Logical properties only, so the layout follows the RTL document direction.
-   Class names here must stay in sync with DictationField.tsx. */
-.dictation-field{display:flex;flex-direction:column;gap:.5rem}
-.dictation-field__bar{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem}
-.dictation-field__meter{display:inline-flex;align-items:flex-end;gap:3px;block-size:1.25rem}
-.dictation-field__meter-bar{inline-size:4px;block-size:.4rem;border-radius:2px;background:var(--color-border,#d5dae2);transition:background-color 120ms ease}
-.dictation-field__meter-bar:nth-child(2){block-size:.6rem}
-.dictation-field__meter-bar:nth-child(3){block-size:.85rem}
-.dictation-field__meter-bar:nth-child(4){block-size:1.05rem}
-.dictation-field__meter-bar:nth-child(5){block-size:1.25rem}
-.dictation-field__meter-bar.is-active{background:var(--color-primary,#2f6feb)}
-.dictation-field__status{margin:0;font-size:.8125rem;line-height:1.9;color:var(--color-text-secondary,#5b6472)}
-.dictation-field__confidence{color:var(--color-text-tertiary,#7b8494)}
-.dictation-field__help{margin-inline-start:auto;padding:0;border:0;background:none;font:inherit;font-size:.8125rem;color:var(--color-primary,#2f6feb);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.dictation-field__help:focus-visible{outline:2px solid var(--color-primary,#2f6feb);outline-offset:2px;border-radius:4px}
-.dictation-field__interim{margin:0;padding:.5rem .75rem;border-inline-start:3px solid var(--color-primary,#2f6feb);border-radius:6px;background:var(--color-surface-muted,#f2f5f9);font-size:.875rem;line-height:2;color:var(--color-text-secondary,#5b6472)}
-.dictation-field__note,.dictation-field__error{margin:0;font-size:.8125rem;line-height:1.9}
-.dictation-field__note{color:var(--color-text-tertiary,#7b8494)}
-.dictation-field__error{color:var(--color-danger,#c0392b)}
-.dictation-field__hints{display:grid;gap:.375rem .75rem;margin:0;padding:.625rem .75rem;border:1px solid var(--color-border,#d5dae2);border-radius:6px;font-size:.8125rem;line-height:1.9;background:var(--color-surface-muted,#f2f5f9)}
-.dictation-field__hint{display:flex;gap:.75rem;align-items:baseline;justify-content:space-between}
-.dictation-field__hint dt{margin:0;color:var(--color-text-secondary,#5b6472)}
-.dictation-field__hint dd{margin:0;color:var(--color-text-tertiary,#7b8494);white-space:nowrap}
-@media (max-width:480px){
-  .dictation-field__help{margin-inline-start:0}
-  .dictation-field__hint{flex-direction:column;gap:.125rem}
-  .dictation-field__hint dd{white-space:normal}
+/*
+ * Dictation field (report content speech-to-text).
+ *
+ * IMPORTANT: every class here is produced by
+ * src/features/reports/components/DictationField.tsx. If you rename a class in
+ * one file, rename it in the other or the control loses all styling.
+ *
+ * Layout rules:
+ *  - Logical properties only (inline-start/end, margin-block), never left/right,
+ *    so the RTL shell stays correct.
+ *  - The bar wraps: the status line is the flexible item, the mic button and
+ *    the help toggle keep their intrinsic size.
+ *  - The command list is an auto-fit grid, so it reflows from two columns to one
+ *    by available width instead of a device breakpoint.
+ */
+
+.dictation-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Control row: mic button, level meter, status, help toggle. */
+.dictation-field__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.625rem;
+  min-inline-size: 0;
+}
+
+/* Live input level. Hidden from assistive tech (decorative). */
+.dictation-field__meter {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.125rem;
+  block-size: 1rem;
+  flex: 0 0 auto;
+}
+
+.dictation-field__meter-bar {
+  inline-size: 0.1875rem;
+  block-size: 0.3125rem;
+  border-radius: 999px;
+  background: var(--color-border, #d5dae2);
+  transition: background-color 120ms ease, block-size 120ms ease;
+}
+
+.dictation-field__meter-bar:nth-child(2) { block-size: 0.5rem; }
+.dictation-field__meter-bar:nth-child(3) { block-size: 0.6875rem; }
+.dictation-field__meter-bar:nth-child(4) { block-size: 0.875rem; }
+.dictation-field__meter-bar:nth-child(5) { block-size: 1rem; }
+
+.dictation-field__meter-bar.is-active {
+  background: var(--color-primary, #2f6feb);
+}
+
+/*
+ * Status text takes the remaining width and wraps inside itself, so it can
+ * never push the help toggle off the row.
+ */
+.dictation-field__status {
+  flex: 1 1 10rem;
+  min-inline-size: 0;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary, #5b6472);
+  margin: 0;
+}
+
+.dictation-field__confidence {
+  color: var(--color-text-tertiary, #7b8494);
+  white-space: nowrap;
+}
+
+.dictation-field__help {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--color-primary, #2f6feb);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.1875rem;
+}
+
+.dictation-field__help:hover { opacity: 0.8; }
+
+.dictation-field__help:focus-visible {
+  outline: 2px solid var(--color-primary, #2f6feb);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+.dictation-field__note,
+.dictation-field__error {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.8;
+}
+
+.dictation-field__note { color: var(--color-text-secondary, #5b6472); }
+.dictation-field__error { color: var(--color-danger, #c0392b); }
+
+/* Voice-command reference list. */
+.dictation-field__hints {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
+  gap: 0.375rem 1rem;
+  margin: 0;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--color-border, #d5dae2);
+  border-radius: 0.5rem;
+  background: var(--color-surface-muted, #f2f5f9);
+  font-size: 0.8125rem;
+  line-height: 1.9;
+}
+
+.dictation-field__hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+  min-inline-size: 0;
+}
+
+.dictation-field__hint dt {
+  min-inline-size: 0;
+  color: var(--color-text-secondary, #5b6472);
+  overflow-wrap: anywhere;
+}
+
+.dictation-field__hint dd {
+  margin: 0;
+  margin-inline-start: auto;
+  padding-inline: 0.375rem;
+  border-radius: 0.25rem;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #d5dae2);
+  color: var(--color-text-primary, #1f2430);
+  white-space: nowrap;
+  font-feature-settings: 'ss01' off;
+}
+
+/* Very narrow phones: stack each hint so the symbol sits under its phrase. */
+@media (max-width: 26rem) {
+  .dictation-field__hint {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dictation-field__hint dd { margin-inline-start: 0; }
+
+  .dictation-field__status { flex-basis: 100%; }
+
+  .dictation-field__help { margin-inline-start: 0; }
 }
