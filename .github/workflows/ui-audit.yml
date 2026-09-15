@@ -1,0 +1,120 @@
+name: UI audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'scripts/ui-audit/**'
+      - '.github/workflows/ui-audit.yml'
+      - 'package.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ui-audit
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+
+      - name: Type check
+        id: typecheck
+        continue-on-error: true
+        run: |
+          mkdir -p audit
+          npx tsc -b 2>&1 | tee audit/typecheck.txt
+
+      - name: Lint
+        id: lint
+        continue-on-error: true
+        run: npm run lint 2>&1 | tee audit/lint.txt
+
+      - name: Build
+        run: npx vite build 2>&1 | tee audit/build.txt
+
+      - name: Static RTL / styling scan
+        continue-on-error: true
+        run: |
+          {
+            echo '# Static directional-CSS scan'
+            echo
+            echo '## Physical direction properties in CSS'
+            grep -rnE '(margin|padding|border|inset)-(left|right)[^a-z-]' src --include='*.css' | wc -l
+            echo
+            echo '## Occurrences by file'
+            grep -rcE '(margin|padding|border|inset)-(left|right)[^a-z-]' src --include='*.css' | sort -t: -k2 -nr | head -40
+            echo
+            echo '## left:/right: offsets'
+            grep -rnE '^[[:space:]]*(left|right):' src --include='*.css' | head -60
+            echo
+            echo '## translateX usage'
+            grep -rnE 'translateX' src --include='*.css' | head -40
+            echo
+            echo '## Micro-offset hacks (1-4px nudges)'
+            grep -rnE '(margin|top|left|right|bottom)[a-z-]*:[[:space:]]*-?[1-4]px' src --include='*.css' | head -80
+            echo
+            echo '## !important count per file'
+            grep -rc '!important' src --include='*.css' | sort -t: -k2 -nr | head -30
+            echo
+            echo '## Inline styles in TSX'
+            grep -rn 'style={{' src --include='*.tsx' | wc -l
+          } > audit/static-scan.txt 2>&1
+
+      - name: Install Playwright Chromium
+        run: |
+          npm i -D playwright@1.49.1 --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Serve build
+        run: |
+          npx vite preview --port 4173 --strictPort > audit/preview.log 2>&1 &
+          echo $! > preview.pid
+          for i in $(seq 1 40); do
+            curl -sf http://127.0.0.1:4173/ > /dev/null && break
+            sleep 1
+          done
+
+      - name: Run UI audit
+        continue-on-error: true
+        env:
+          AUDIT_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/ui-audit/run-audit.mjs 2>&1 | tee audit/audit-run.txt
+
+      - name: Stop preview
+        if: always()
+        run: kill "$(cat preview.pid)" || true
+
+      - name: Upload screenshots and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-audit
+          path: audit
+          retention-days: 14
+
+      - name: Publish reports to ci-audit branch
+        if: always()
+        run: |
+          rm -rf audit/screenshots
+          cd audit
+          git init -b ci-audit
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "audit: reports for ${{ github.sha }}"
+          git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" ci-audit
