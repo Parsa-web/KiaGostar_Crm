@@ -1,0 +1,102 @@
+# Static directional-CSS scan
+
+## Physical direction properties in CSS
+0
+
+## Occurrences by file
+src/styles/work-modules.css:0
+src/styles/variables.css:0
+src/styles/utilities.css:0
+src/styles/ui-polish.css:0
+src/styles/typography.css:0
+src/styles/shell.css:0
+src/styles/scrollbar.css:0
+src/styles/rtl.css:0
+src/styles/responsive.css:0
+src/styles/reset.css:0
+src/styles/refinements.css:0
+src/styles/primitives.css:0
+src/styles/polish.css:0
+src/styles/overlay.css:0
+src/styles/module-surfaces.css:0
+src/styles/minimal.css:0
+src/styles/meetings.css:0
+src/styles/layout.css:0
+src/styles/index.css:0
+src/styles/globals.css:0
+src/styles/foundations.css:0
+src/styles/forms.css:0
+src/styles/fonts.css:0
+src/styles/executive.css:0
+src/styles/dictation.css:0
+src/styles/data-display.css:0
+src/styles/dashboard.css:0
+src/styles/components.css:0
+src/styles/chrome.css:0
+src/styles/auth.css:0
+src/styles/animations.css:0
+
+## left:/right: offsets
+
+## translateX usage
+src/styles/overlay.css:61:.ui-tooltip--top{inset-block-end:calc(100% + var(--space-1));inset-inline-start:50%;transform:translateX(50%)}
+src/styles/overlay.css:62:.ui-tooltip--bottom{inset-block-start:calc(100% + var(--space-1));inset-inline-start:50%;transform:translateX(50%)}
+src/styles/overlay.css:103:.ui-snackbar-stack{position:fixed;inset-block-end:var(--space-5);inset-inline-start:50%;transform:translateX(50%);display:flex;flex-direction:column;gap:var(--space-2);inline-size:min(30rem,calc(100vw - var(--space-8)))}
+src/styles/foundations.css:2:input[type="checkbox"],input[type="radio"]{inline-size:1.15rem;min-block-size:1.15rem;padding:0;accent-color:var(--color-primary)}.switch{position:relative;display:inline-flex;inline-size:2.25rem;block-size:1.25rem;align-items:center;padding:.15rem;border-radius:var(--radius-full);background:var(--color-border-strong);cursor:pointer}.switch::after{content:"";inline-size:1rem;block-size:1rem;border-radius:50%;background:var(--color-surface);box-shadow:var(--shadow-xs);transition:transform var(--duration-fast)}.switch[aria-checked="true"]{background:var(--color-primary)}.switch[aria-checked="true"]::after{transform:translateX(-1rem)}
+src/styles/work-modules.css:15:@keyframes progress-slide{0%{transform:translateX(100%)}100%{transform:translateX(-150%)}}
+src/styles/animations.css:1:@keyframes fade-in{from{opacity:0}to{opacity:1}}@keyframes fade-out{to{opacity:0}}@keyframes slide-up{from{opacity:0;transform:translateY(.5rem)}}@keyframes slide-down{from{opacity:0;transform:translateY(-.5rem)}}@keyframes slide-inline-start{from{transform:translateX(1rem);opacity:0}}@keyframes slide-inline-end{from{transform:translateX(-1rem);opacity:0}}@keyframes scale-in{from{opacity:0;transform:scale(.98)}}@keyframes pulse-soft{50%{opacity:.65}}@keyframes skeleton-shimmer{to{background-position:-200% 0}}@keyframes spin{to{transform:rotate(1turn)}}@keyframes progress-indeterminate{from{transform:translateX(100%)}to{transform:translateX(-100%)}}.route-enter{animation:fade-in var(--duration-normal) var(--easing-enter),slide-up var(--duration-normal) var(--easing-enter)}
+src/styles/forms.css:4:.choice-control,.switch-control{display:flex;align-items:flex-start;gap:var(--space-3);inline-size:max-content;max-inline-size:100%;cursor:pointer}.choice-control.is-disabled,.switch-control.is-disabled{cursor:not-allowed;opacity:.55}.choice-control>input{position:absolute;inline-size:1px;block-size:1px;opacity:0}.choice-control__indicator{position:relative;display:grid;inline-size:1.25rem;block-size:1.25rem;flex:0 0 auto;place-items:center;margin-block-start:.15rem;border:1px solid var(--color-border-strong);border-radius:var(--radius-sm);background:var(--color-surface);transition:border-color var(--duration-fast),background var(--duration-fast),box-shadow var(--duration-fast)}.choice-control input:focus-visible+.choice-control__indicator{border-color:var(--color-border-focus);box-shadow:var(--shadow-focus)}.choice-control input[type="checkbox"]:checked+.choice-control__indicator,.choice-control input[type="checkbox"]:indeterminate+.choice-control__indicator{border-color:var(--color-primary);background:var(--color-primary)}.choice-control input[type="checkbox"]:checked+.choice-control__indicator::after{content:"";inline-size:.45rem;block-size:.7rem;border-inline-end:2px solid var(--color-primary-contrast);border-block-end:2px solid var(--color-primary-contrast);transform:rotate(45deg) translate(-1px,1px)}.choice-control input[type="checkbox"]:indeterminate+.choice-control__indicator::after{content:"";inline-size:.65rem;border-block-start:2px solid var(--color-primary-contrast)}.choice-control input[type="radio"]+.choice-control__indicator{border-radius:50%}.choice-control input[type="radio"]:checked+.choice-control__indicator{border:4px solid var(--color-primary)}.choice-control__copy{display:grid;line-height:1.45}.choice-control__copy strong{font-size:var(--text-body-md);font-weight:500}.choice-control__copy small{color:var(--color-text-muted);font-size:var(--text-body-sm)}.radio-group{display:flex;gap:var(--space-3);padding:0;border:0}.radio-group legend{margin-block-end:var(--space-2);font-weight:600}.radio-group--vertical{flex-direction:column}.radio-group--horizontal{flex-direction:row;flex-wrap:wrap}.switch-control__button{position:relative;inline-size:2.25rem;min-block-size:1.25rem;flex:0 0 auto;padding:0;border-radius:var(--radius-full);background:var(--color-border-strong)}.switch-control__button>span:not(.ui-spinner-wrap){position:absolute;inset-block-start:.15rem;inset-inline-start:.15rem;inline-size:1rem;block-size:1rem;border-radius:50%;background:var(--color-surface);box-shadow:var(--shadow-xs);transition:transform var(--duration-fast)}.switch-control__button[aria-checked="true"]{background:var(--color-primary)}.switch-control__button[aria-checked="true"]>span{transform:translateX(-1rem)}
+src/styles/polish.css:198:  transform: translateX(-1.1rem);
+src/styles/executive.css:1494:    transform: translateX(-2px);
+src/styles/data-display.css:310:.trend-chart__tooltip { position: absolute; z-index: 2; display: grid; gap: var(--space-1); min-inline-size: 9rem; max-inline-size: calc(100% - var(--space-4)); padding: var(--space-2) var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text-secondary); box-shadow: var(--shadow-md); font-size: var(--font-size-xs); transform: translateX(-50%); pointer-events: none; }
+src/styles/shell.css:134:.quick-action-item:hover .quick-action-item__chevron{color:var(--color-primary);transform:translateX(-2px)}
+src/styles/shell.css:143:  .app-sidebar,.app-sidebar.is-collapsed{inline-size:min(88vw,19rem);transform:translateX(110%);box-shadow:var(--shadow-modal)}
+src/styles/shell.css:153:  .header-calendar-popover{inset-inline-end:auto;inset-inline-start:50%;transform:translateX(-50%);inline-size:min(22rem,calc(100vw - 2rem))}
+
+## Micro-offset hacks (1-4px nudges)
+src/styles/overlay.css:94:.ui-toast__icon{display:inline-flex;color:var(--color-text-secondary);margin-block-start:2px}
+src/styles/overlay.css:113:.ui-banner__icon{display:inline-flex;margin-block-start:2px;color:var(--color-text-secondary)}
+src/styles/work-modules.css:107:.comments__composer{padding-top:var(--space-3);border-top:1px solid var(--color-border)}
+src/styles/utilities.css:1:.visually-hidden,.sr-only{position:absolute!important;inline-size:1px!important;block-size:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.line-clamp-1,.line-clamp-2,.line-clamp-3{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical}.line-clamp-1{-webkit-line-clamp:1}.line-clamp-2{-webkit-line-clamp:2}.line-clamp-3{-webkit-line-clamp:3}.full-width{inline-size:100%}.full-height{block-size:100%}.scrollable{overflow:auto}.no-scrollbar{scrollbar-width:none}.no-scrollbar::-webkit-scrollbar{display:none}.text-muted{color:var(--color-text-muted)}.text-danger{color:var(--color-danger-text)}.text-success{color:var(--color-success-text)}.surface{background:var(--color-surface);border:1px solid var(--color-border)}.surface-elevated{background:var(--color-background-elevated);box-shadow:var(--shadow-md)}.mobile-only{display:none}.ltr{direction:ltr;text-align:left}.icon-inline{display:inline-flex;align-items:center;gap:var(--space-2)}
+src/styles/ui-polish.css:137:  margin-inline-start: -1px;
+src/styles/dashboard.css:377:  margin: 2px 0 0;
+src/styles/module-surfaces.css:15:.description-list>div{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding:var(--space-2) 0;border-bottom:1px dashed var(--color-border)}
+src/styles/refinements.css:646:.app-calendar-grid--head { gap: var(--space-1); margin-block-end: 2px; }
+src/styles/executive.css:80:  margin-block-end: 2px;
+src/styles/meetings.css:41:.meeting-agenda__body{padding:0 var(--space-3) var(--space-3);color:var(--color-text-secondary);line-height:var(--line-height-relaxed);border-top:1px solid var(--color-border);padding-top:var(--space-3)}
+src/styles/meetings.css:76:.meeting-live__status-list>li{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);padding-block:var(--space-2);border-bottom:1px solid var(--color-border);color:var(--color-text-secondary);font-size:var(--font-size-sm)}
+
+## !important count per file
+src/styles/refinements.css:4
+src/styles/utilities.css:1
+src/styles/responsive.css:1
+src/styles/polish.css:1
+src/styles/overlay.css:1
+src/styles/minimal.css:1
+src/styles/meetings.css:1
+src/styles/chrome.css:1
+src/styles/animations.css:1
+src/styles/work-modules.css:0
+src/styles/variables.css:0
+src/styles/ui-polish.css:0
+src/styles/typography.css:0
+src/styles/shell.css:0
+src/styles/scrollbar.css:0
+src/styles/rtl.css:0
+src/styles/reset.css:0
+src/styles/primitives.css:0
+src/styles/module-surfaces.css:0
+src/styles/layout.css:0
+src/styles/index.css:0
+src/styles/globals.css:0
+src/styles/foundations.css:0
+src/styles/forms.css:0
+src/styles/fonts.css:0
+src/styles/executive.css:0
+src/styles/dictation.css:0
+src/styles/data-display.css:0
+src/styles/dashboard.css:0
+src/styles/components.css:0
+
+## Inline styles in TSX
+43

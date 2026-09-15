@@ -1,0 +1,72 @@
+
+> kiagostar-crm@0.0.0 lint
+> eslint .
+
+
+/home/runner/work/KiaGostar_Crm/KiaGostar_Crm/src/app/routes/ModuleSurfaces.tsx
+  258:57  error  '_onNavigate' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/runner/work/KiaGostar_Crm/KiaGostar_Crm/src/app/routes/RouteSurface.tsx
+  21:38  error  'meetingToCreateFormValues' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/runner/work/KiaGostar_Crm/KiaGostar_Crm/src/components/dashboard/DashboardShell.tsx
+  18:10  error  'CalendarButton' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/runner/work/KiaGostar_Crm/KiaGostar_Crm/src/features/meetings/components/AudioDebugPanel.tsx
+  137:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/runner/work/KiaGostar_Crm/KiaGostar_Crm/src/features/meetings/hooks/useAudioEngine.ts
+  89:3  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/home/runner/work/KiaGostar_Crm/KiaGostar_Crm/src/features/meetings/hooks/useAudioEngine.ts:89:3
+  87 |   /** Latest options in a ref so event handlers never go stale. */
+  88 |   const optsRef = useRef({ src, startSec, endSec, isSegment, segmentDuration })
+> 89 |   optsRef.current = { src, startSec, endSec, isSegment, segmentDuration }
+     |   ^^^^^^^^^^^^^^^ Cannot update ref during render
+  90 |
+  91 |   /** Whether THIS hook instance is the currently active one. */
+  92 |   const isActiveRef = useRef(false)  react-hooks/refs
+
+/home/runner/work/KiaGostar_Crm/KiaGostar_Crm/src/features/meetings/pages/LiveMeetingWorkspacePage.tsx
+   73:10  error  'savedRecording' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  115:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/home/runner/work/KiaGostar_Crm/KiaGostar_Crm/src/features/meetings/pages/LiveMeetingWorkspacePage.tsx:115:5
+  113 |     const url = URL.createObjectURL(blob)
+  114 |     audioUrlRef.current = url
+> 115 |     setAudioUrl(url)
+      |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  116 |     setSavedRecording(blob)
+  117 |     console.log('[WS] audioUrl set from in-memory blob')
+  118 |  react-hooks/set-state-in-effect
+
+/home/runner/work/KiaGostar_Crm/KiaGostar_Crm/src/features/meetings/pages/MeetingModulePages.tsx
+   12:22  error  'meetingToCreateFormValues' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   39:13  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/home/runner/work/KiaGostar_Crm/KiaGostar_Crm/src/features/meetings/pages/MeetingModulePages.tsx:39:13
+  37 |
+  38 |  const tabFiltered=useMemo(()=>{
+> 39 |   const now=Date.now()
+     |             ^^^^^^^^^^ Cannot call impure function
+  40 |   if(activeTab==='cancelled')return meetings.filter((m)=>m.status==='CANCELLED'||m.status==='REJECTED')
+  41 |   if(activeTab==='past')return meetings.filter((m)=>(m.status==='COMPLETED')&&new Date(m.endTime).getTime()<now)
+  42 |   return meetings.filter((m)=>m.status!=='CANCELLED'&&m.status!=='REJECTED'&&new Date(m.endTime).getTime()>=now)  react-hooks/purity
+  225:9   error  '_durationError' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  225:24  error  '_setDurationError' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+
+/home/runner/work/KiaGostar_Crm/KiaGostar_Crm/src/features/tasks/pages/TaskModulePages.tsx
+  2:157  error  'Switch' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 12 problems (12 errors, 0 warnings)
+

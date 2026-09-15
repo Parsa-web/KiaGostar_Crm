@@ -1,0 +1,22 @@
+[36mvite v8.2.0 [32mbuilding client environment for production...[36m[39m
+[2Ktransforming...✓ 390 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                              0.47 kB │ gzip:   0.30 kB
+dist/assets/Shabnam-Medium-BATPErAI.woff2   37.42 kB
+dist/assets/Shabnam-Bold-BDpvJuWe.woff2     37.75 kB
+dist/assets/Shabnam-Light-ChocK_wl.woff2    42.50 kB
+dist/assets/index-BUlsq0cW.css             299.45 kB │ gzip:  43.44 kB
+dist/assets/index-D410tRam.js              824.95 kB │ gzip: 251.32 kB
+
+[32m✓ built in 11.90s[39m
+[33m[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+[33m[33m[PLUGIN_TIMINGS] [0mYour build spent 99% of 11.9s inside plugin hooks (11.7s).
+Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+  - @rolldown/plugin-babel transform (97%, 11.5s, 334 calls)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+[39m

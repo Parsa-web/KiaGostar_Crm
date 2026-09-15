@@ -1,0 +1,18 @@
+src/app/routes/RouteSurface.tsx(21,38): error TS6133: 'meetingToCreateFormValues' is declared but its value is never read.
+src/app/routes/RouteSurface.tsx(110,80): error TS2345: Argument of type 'string' is not assignable to parameter of type '"PENDING" | "IN_PROGRESS" | "COMPLETED" | "OVERDUE"'.
+src/app/routes/RouteSurface.tsx(115,4): error TS2322: Type '((files: readonly File[]) => void) | undefined' is not assignable to type '((files: readonly CreateTaskAttachmentPayload[]) => void | Promise<void>) | undefined'.
+  Type '(files: readonly File[]) => void' is not assignable to type '(files: readonly CreateTaskAttachmentPayload[]) => void | Promise<void>'.
+    Types of parameters 'files' and 'files' are incompatible.
+      Type 'readonly CreateTaskAttachmentPayload[]' is not assignable to type 'readonly File[]'.
+        Type 'CreateTaskAttachmentPayload' is missing the following properties from type 'File': lastModified, webkitRelativePath, size, type, and 5 more.
+src/app/routes/RouteSurface.tsx(115,117): error TS2345: Argument of type 'readonly File[]' is not assignable to parameter of type 'readonly CreateTaskAttachmentPayload[]'.
+  Type 'File' is missing the following properties from type 'CreateTaskAttachmentPayload': mimeType, sizeBytes
+src/components/dashboard/DashboardShell.tsx(18,10): error TS6133: 'CalendarButton' is declared but its value is never read.
+src/features/meetings/pages/LiveMeetingWorkspacePage.tsx(73,10): error TS6133: 'savedRecording' is declared but its value is never read.
+src/features/meetings/pages/MeetingModulePages.tsx(12,22): error TS6133: 'meetingToCreateFormValues' is declared but its value is never read.
+src/features/reports/components/DictationField.tsx(113,79): error TS2322: Type '"sm16"' is not assignable to type 'number | IconSize | undefined'.
+src/features/tasks/pages/TaskModulePages.tsx(2,157): error TS6133: 'Switch' is declared but its value is never read.
+src/features/tasks/pages/TaskModulePages.tsx(161,5): error TS2304: Cannot find name 'MultiSelect'.
+src/features/tasks/pages/TaskModulePages.tsx(162,5): error TS2552: Cannot find name 'Select'. Did you mean 'onselect'?
+src/features/tasks/pages/TaskModulePages.tsx(165,5): error TS2552: Cannot find name 'Select'. Did you mean 'onselect'?
+src/features/tasks/pages/TaskModulePages.tsx(169,5): error TS2552: Cannot find name 'Select'. Did you mean 'onselect'?
