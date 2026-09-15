@@ -45,6 +45,8 @@ jobs:
         run: npm run lint 2>&1 | tee audit/lint.txt
 
       - name: Build
+        env:
+          VITE_BASE: /
         run: npx vite build 2>&1 | tee audit/build.txt
 
       - name: Static RTL / styling scan
@@ -82,12 +84,22 @@ jobs:
 
       - name: Serve build
         run: |
-          npx vite preview --port 4173 --strictPort > audit/preview.log 2>&1 &
+          npx vite preview --host 127.0.0.1 --port 4173 --strictPort > audit/preview.log 2>&1 &
           echo $! > preview.pid
-          for i in $(seq 1 40); do
-            curl -sf http://127.0.0.1:4173/ > /dev/null && break
+          ready=0
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:4173/ > /dev/null; then
+              ready=1
+              break
+            fi
             sleep 1
           done
+          echo "preview ready: $ready"
+          cat audit/preview.log || true
+          if [ "$ready" != "1" ]; then
+            echo 'Preview server never became reachable on http://127.0.0.1:4173/'
+            exit 1
+          fi
 
       - name: Run UI audit
         continue-on-error: true
