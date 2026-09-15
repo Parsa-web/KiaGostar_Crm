@@ -2,7 +2,7 @@
  * RecordingStatusPanel — shows recording state, elapsed time, and controls.
  */
 
-import { memo, useEffect, useRef, useState } from 'react'
+import { memo } from 'react'
 import { Button, StatusBadge } from '../../../components/ui'
 import { WorkPanel } from '../../../components/work'
 import type { MasterRecordingStatus } from '../hooks/useMasterRecording'
@@ -48,8 +48,6 @@ export const RecordingStatusPanel = memo(function RecordingStatusPanel({
   onResume,
   onStop,
 }: RecordingStatusPanelProps) {
-  const isActive = status === 'recording' || status === 'paused'
-
   return (
     <WorkPanel
       title="وضعیت ضبط"
