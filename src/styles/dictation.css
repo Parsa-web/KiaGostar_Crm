@@ -20,7 +20,7 @@
   gap: 0.5rem;
 }
 
-/* Control row: mic button, level meter, status, help toggle. */
+/* Control row: mic button, activity meter, status, help toggle. */
 .dictation-field__bar {
   display: flex;
   flex-wrap: wrap;
@@ -29,7 +29,11 @@
   min-inline-size: 0;
 }
 
-/* Live input level. Hidden from assistive tech (decorative). */
+/*
+ * Speech-activity meter. It is driven by the recognizer's speech events, not by
+ * a separate microphone capture, so the bars rise together while speech is
+ * detected. Decorative: hidden from assistive tech in the component.
+ */
 .dictation-field__meter {
   display: inline-flex;
   align-items: flex-end;
@@ -53,6 +57,21 @@
 
 .dictation-field__meter-bar.is-active {
   background: var(--color-primary, #2f6feb);
+  animation: dictation-pulse 900ms ease-in-out infinite;
+}
+
+.dictation-field__meter-bar.is-active:nth-child(2) { animation-delay: 90ms; }
+.dictation-field__meter-bar.is-active:nth-child(3) { animation-delay: 180ms; }
+.dictation-field__meter-bar.is-active:nth-child(4) { animation-delay: 270ms; }
+.dictation-field__meter-bar.is-active:nth-child(5) { animation-delay: 360ms; }
+
+@keyframes dictation-pulse {
+  0%, 100% { transform: scaleY(0.55); opacity: 0.65; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dictation-field__meter-bar.is-active { animation: none; }
 }
 
 /*
