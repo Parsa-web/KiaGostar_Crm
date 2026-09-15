@@ -1,5 +1,15 @@
 name: Build & Deploy to GitHub Pages
 
+# Deployment model: this workflow only BUILDS and pushes the built site to the
+# gh-pages branch. GitHub's built-in "pages build and deployment" job then
+# publishes that branch, because Settings -> Pages -> Source is
+# "Deploy from a branch: gh-pages".
+#
+# Do not add an actions/deploy-pages job here while the source is a branch:
+# the github-pages environment only allows the configured source branch to
+# deploy, so a job running on main is rejected with
+# 'Branch "main" is not allowed to deploy to github-pages'.
+
 on:
   push:
     branches: [main]
@@ -7,8 +17,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -52,22 +60,3 @@ jobs:
           git add -A
           git commit -m "deploy: ${{ github.sha }}"
           git push --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" gh-pages
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    # Requires Settings -> Pages -> Source = "GitHub Actions".
-    # Kept non-fatal so the gh-pages branch output is still usable.
-    continue-on-error: true
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
