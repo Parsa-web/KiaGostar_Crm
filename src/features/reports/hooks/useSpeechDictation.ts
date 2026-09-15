@@ -1,20 +1,17 @@
 /**
  * useSpeechDictation — live Persian speech-to-text on the Web Speech API.
  *
- * Design notes:
- *  - The mic is opened with getUserMedia first (noiseSuppression,
- *    echoCancellation, autoGainControl, mono) so the recognizer receives an
- *    already-cleaned track and we can show a real input-level meter.
- *  - maxAlternatives = 3 and the alternative with the highest confidence wins.
- *  - Interim results are streamed out through onInterim so the caller can show
- *    them in the real field while the user is still speaking. The caller
- *    rewrites them in place from a stable anchor, so a revised guess never
- *    deletes text that was already final.
- *  - A single failure must never kill dictation: only permission / service /
- *    language / missing-device errors are fatal, everything else is retried
- *    with exponential backoff.
- *  - A watchdog restarts a session that is alive but has stopped producing
- *    results, and rotates the session before Chrome's own time limit.
+ * Ordering matters: SpeechRecognition must own the microphone. We do NOT open
+ * a getUserMedia capture before it, because a second capture of the same
+ * device can starve the recognizer (mic active, zero results). The level meter
+ * is opportunistic: it attaches after the first recognised result and is
+ * dropped silently if the browser refuses a second stream.
+ *
+ * Session lifecycle: every relaunch goes through one scheduler guarded by a
+ * generation counter, so handlers belonging to a superseded session can never
+ * spawn a competing recognition object. Sessions that end after a successful
+ * start (normal silence timeout) are free to relaunch; only sessions that
+ * never started count towards the failure limit.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { convertDictation, previewDictation } from '../utils/persianDictation'
@@ -38,6 +35,7 @@ interface SpeechRecognitionLike {
   onend: (() => void) | null
   onresult: ((event: SpeechEventLike) => void) | null
   onerror: ((event: SpeechErrorEventLike) => void) | null
+  onspeechstart?: (() => void) | null
 }
 type SpeechRecognitionCtor = new () => SpeechRecognitionLike
 
@@ -53,18 +51,22 @@ export function isDictationSupported(): boolean {
 
 /** Errors the user must fix; dictation stops. */
 const FATAL_ERRORS: Readonly<Record<string, string>> = {
-  'not-allowed': 'دسترسی به میکروفن داده نشد. از نوار آدرس مرورگر اجازهٔ میکروفن را فعال کنید.',
-  'service-not-allowed': 'سرویس تبدیل گفتار در این مرورگر مجاز نیست.',
-  'language-not-supported': 'زبان فارسی در این مرورگر پشتیبانی نمی‌شود.',
-  'audio-capture': 'میکروفنی یافت نشد. اتصال میکروفن را بررسی کنید.',
+  'not-allowed': '\u062f\u0633\u062a\u0631\u0633\u06cc \u0628\u0647 \u0645\u06cc\u06a9\u0631\u0648\u0641\u0646 \u062f\u0627\u062f\u0647 \u0646\u0634\u062f. \u0627\u0632 \u0646\u0648\u0627\u0631 \u0622\u062f\u0631\u0633 \u0645\u0631\u0648\u0631\u06af\u0631 \u0627\u062c\u0627\u0632\u0647\u0654 \u0645\u06cc\u06a9\u0631\u0648\u0641\u0646 \u0631\u0627 \u0641\u0639\u0627\u0644 \u06a9\u0646\u06cc\u062f.',
+  'service-not-allowed': '\u0633\u0631\u0648\u06cc\u0633 \u062a\u0628\u062f\u06cc\u0644 \u06af\u0641\u062a\u0627\u0631 \u062f\u0631 \u0627\u06cc\u0646 \u0645\u0631\u0648\u0631\u06af\u0631 \u0645\u062c\u0627\u0632 \u0646\u06cc\u0633\u062a.',
+  'language-not-supported': '\u0632\u0628\u0627\u0646 \u0641\u0627\u0631\u0633\u06cc \u062f\u0631 \u0627\u06cc\u0646 \u0645\u0631\u0648\u0631\u06af\u0631 \u067e\u0634\u062a\u06cc\u0628\u0627\u0646\u06cc \u0646\u0645\u06cc\u200c\u0634\u0648\u062f.',
+  'audio-capture': '\u0645\u06cc\u06a9\u0631\u0648\u0641\u0646\u06cc \u06cc\u0627\u0641\u062a \u0646\u0634\u062f. \u0627\u062a\u0635\u0627\u0644 \u0645\u06cc\u06a9\u0631\u0648\u0641\u0646 \u0631\u0627 \u0628\u0631\u0631\u0633\u06cc \u06a9\u0646\u06cc\u062f.',
 }
 
-const WATCHDOG_INTERVAL_MS = 3000
-/** No result for this long while listening means the session is stale. */
-const STALE_AFTER_MS = 9000
-/** Chrome caps a session at about a minute; rotate earlier, only when idle. */
-const ROTATE_AFTER_MS = 45000
-const MAX_RETRIES = 8
+const NETWORK_NOTICE = '\u0627\u062a\u0635\u0627\u0644 \u0633\u0631\u0648\u06cc\u0633 \u06af\u0641\u062a\u0627\u0631 \u0645\u0648\u0642\u062a\u0627\u064b \u0642\u0637\u0639 \u0634\u062f\u061b \u062f\u0631 \u062d\u0627\u0644 \u0627\u062a\u0635\u0627\u0644 \u0645\u062c\u062f\u062f\u2026'
+const FAILED_START_MESSAGE = '\u0627\u0631\u062a\u0628\u0627\u0637 \u0628\u0627 \u0633\u0631\u0648\u06cc\u0633 \u062a\u0628\u062f\u06cc\u0644 \u06af\u0641\u062a\u0627\u0631 \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u0634\u062f. \u0627\u062a\u0635\u0627\u0644 \u0627\u06cc\u0646\u062a\u0631\u0646\u062a \u0631\u0627 \u0628\u0631\u0631\u0633\u06cc \u06a9\u0646\u06cc\u062f \u0648 \u062f\u0648\u0628\u0627\u0631\u0647 \u062a\u0644\u0627\u0634 \u06a9\u0646\u06cc\u062f.'
+
+const WATCHDOG_INTERVAL_MS = 4000
+/** Only a session that produces no event at all for this long is considered dead. */
+const DEAD_AFTER_MS = 20000
+/** Chrome caps a session at about a minute; rotate earlier, and only when idle. */
+const ROTATE_AFTER_MS = 50000
+/** Consecutive sessions that never reached onstart before giving up. */
+const MAX_FAILED_STARTS = 6
 
 export interface UseSpeechDictationOptions {
   lang?: string
@@ -98,18 +100,22 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
   const [notice, setNotice] = useState<string | null>(null)
 
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
-  const launchRef = useRef<(() => void) | null>(null)
+  const launchRef = useRef<((generation: number) => void) | null>(null)
   const commitRef = useRef(onCommit)
   const interimRef = useRef(onInterim)
   const wantedRef = useRef(false)
+  /** Incremented whenever a session is superseded; stale handlers bail out. */
+  const generationRef = useRef(0)
   const streamRef = useRef<MediaStream | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const frameRef = useRef(0)
   const levelRef = useRef(0)
+  const meterRequestedRef = useRef(false)
   const restartTimerRef = useRef(0)
   const watchdogRef = useRef(0)
-  const retriesRef = useRef(0)
-  const lastResultAtRef = useRef(0)
+  const failedStartsRef = useRef(0)
+  const startedRef = useRef(false)
+  const lastEventAtRef = useRef(0)
   const sessionStartedAtRef = useRef(0)
   const hasInterimRef = useRef(false)
   const carryRef = useRef('')
@@ -129,141 +135,212 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
     const context = audioContextRef.current
     audioContextRef.current = null
     if (context) void context.close().catch(() => undefined)
+    streamRef.current?.getTracks().forEach((track) => {
+      try {
+        track.stop()
+      } catch {
+        /* noop */
+      }
+    })
+    streamRef.current = null
+    meterRequestedRef.current = false
     levelRef.current = 0
     setLevel(0)
   }, [])
 
-  const startMeter = useCallback((stream: MediaStream) => {
-    const AudioCtor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
-    if (!AudioCtor) return
-    const context = new AudioCtor()
-    audioContextRef.current = context
-    const analyser = context.createAnalyser()
-    analyser.fftSize = 1024
-    analyser.smoothingTimeConstant = 0.8
-    context.createMediaStreamSource(stream).connect(analyser)
-    const buffer = new Float32Array(analyser.fftSize)
-    const tick = () => {
-      analyser.getFloatTimeDomainData(buffer)
-      let sum = 0
-      for (let i = 0; i < buffer.length; i += 1) sum += buffer[i] * buffer[i]
-      const next = Math.min(1, Math.sqrt(sum / buffer.length) * 4)
-      if (Math.abs(next - levelRef.current) > 0.04) {
-        levelRef.current = next
-        setLevel(next)
-      }
-      frameRef.current = requestAnimationFrame(tick)
-    }
-    frameRef.current = requestAnimationFrame(tick)
+  /**
+   * Opportunistic input-level meter. Started only after recognition is proven
+   * to work, so it can never compete with the recognizer for the device.
+   */
+  const attachMeter = useCallback(() => {
+    if (meterRequestedRef.current || !navigator.mediaDevices?.getUserMedia) return
+    meterRequestedRef.current = true
+    void navigator.mediaDevices
+      .getUserMedia({ audio: { noiseSuppression: true, echoCancellation: true, autoGainControl: true, channelCount: 1 } })
+      .then((stream) => {
+        if (!wantedRef.current) {
+          stream.getTracks().forEach((track) => track.stop())
+          return
+        }
+        streamRef.current = stream
+        const AudioCtor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+        if (!AudioCtor) return
+        const context = new AudioCtor()
+        audioContextRef.current = context
+        const analyser = context.createAnalyser()
+        analyser.fftSize = 1024
+        analyser.smoothingTimeConstant = 0.8
+        context.createMediaStreamSource(stream).connect(analyser)
+        const buffer = new Float32Array(analyser.fftSize)
+        const tick = () => {
+          analyser.getFloatTimeDomainData(buffer)
+          let sum = 0
+          for (let i = 0; i < buffer.length; i += 1) sum += buffer[i] * buffer[i]
+          const next = Math.min(1, Math.sqrt(sum / buffer.length) * 4)
+          if (Math.abs(next - levelRef.current) > 0.04) {
+            levelRef.current = next
+            setLevel(next)
+          }
+          frameRef.current = requestAnimationFrame(tick)
+        }
+        frameRef.current = requestAnimationFrame(tick)
+      })
+      .catch(() => {
+        /* No meter. Recognition keeps working, which is what matters. */
+      })
   }, [])
 
-  const launch = useCallback(() => {
-    const Ctor = getRecognitionCtor()
-    if (!Ctor) return
-    const recognition = new Ctor()
-    recognition.lang = lang
-    recognition.continuous = true
-    recognition.interimResults = true
-    recognition.maxAlternatives = 3
+  /** Single relaunch scheduler: one pending timer, ever. */
+  const scheduleRelaunch = useCallback((delay: number) => {
+    if (restartTimerRef.current) window.clearTimeout(restartTimerRef.current)
+    restartTimerRef.current = window.setTimeout(() => {
+      restartTimerRef.current = 0
+      if (wantedRef.current) launchRef.current?.(generationRef.current)
+    }, delay)
+  }, [])
 
-    recognition.onstart = () => {
-      sessionStartedAtRef.current = Date.now()
-      lastResultAtRef.current = Date.now()
-      setStatus('listening')
-    }
+  const launch = useCallback(
+    (generation: number) => {
+      const Ctor = getRecognitionCtor()
+      if (!Ctor || generation !== generationRef.current) return
+      const recognition = new Ctor()
+      recognition.lang = lang
+      recognition.continuous = true
+      recognition.interimResults = true
+      recognition.maxAlternatives = 3
+      startedRef.current = false
+      lastEventAtRef.current = Date.now()
 
-    recognition.onresult = (event) => {
-      lastResultAtRef.current = Date.now()
-      retriesRef.current = 0
-      setNotice(null)
-      let pending = ''
-      let finalised = ''
-      let lastConfidence: number | null = null
-      for (let index = event.resultIndex; index < event.results.length; index += 1) {
-        const result = event.results[index]
-        let best = result[0]
-        for (let alt = 1; alt < result.length; alt += 1) {
-          const candidate = result[alt]
-          if (candidate && candidate.confidence > best.confidence) best = candidate
-        }
-        if (!best) continue
-        if (result.isFinal) {
-          finalised += `${best.transcript} `
-          lastConfidence = best.confidence
-        } else {
-          pending += best.transcript
-        }
-      }
+      const isCurrent = () => generation === generationRef.current
 
-      const raw = finalised.trim()
-      if (raw) {
-        const converted = convertDictation(raw, carryRef.current)
-        carryRef.current = converted.carry
-        if (converted.text) commitRef.current(converted.text)
-        if (lastConfidence !== null && Number.isFinite(lastConfidence) && lastConfidence > 0) setConfidence(lastConfidence)
-        // The finalised part is now part of the anchor; only the still-open
-        // guess may remain on screen.
-        hasInterimRef.current = false
-        interimRef.current('')
-      }
-
-      const preview = pending.trim() ? previewDictation(carryRef.current ? `${carryRef.current} ${pending}` : pending) : ''
-      hasInterimRef.current = preview.length > 0
-      interimRef.current(preview)
-    }
-
-    recognition.onerror = (event) => {
-      const fatal = FATAL_ERRORS[event.error]
-      if (fatal) {
-        wantedRef.current = false
-        setError(fatal)
+      recognition.onstart = () => {
+        if (!isCurrent()) return
+        startedRef.current = true
+        failedStartsRef.current = 0
+        sessionStartedAtRef.current = Date.now()
+        lastEventAtRef.current = Date.now()
+        setStatus('listening')
         setNotice(null)
-        setStatus('error')
-        return
       }
-      // Recoverable: a pause in speech, a dropped connection or our own
-      // restart. Keep the intent flag so onend relaunches the session.
-      if (event.error === 'network') setNotice('اتصال سرویس گفتار موقتاً قطع شد؛ در حال اتصال مجدد…')
-    }
 
-    recognition.onend = () => {
-      recognitionRef.current = null
-      // An open guess that never became final is dropped, so the field keeps
-      // only text the recognizer actually confirmed.
-      if (hasInterimRef.current) {
-        hasInterimRef.current = false
-        interimRef.current('')
-      }
-      if (!wantedRef.current) {
-        setStatus((previous) => (previous === 'error' ? previous : 'idle'))
-        return
-      }
-      if (retriesRef.current >= MAX_RETRIES) {
-        wantedRef.current = false
-        setError('ارتباط با سرویس تبدیل گفتار برقرار نشد. اتصال اینترنت را بررسی کنید و دوباره تلاش کنید.')
-        setStatus('error')
-        return
-      }
-      const delay = Math.min(2500, 200 * 2 ** retriesRef.current)
-      retriesRef.current += 1
-      setStatus((previous) => (previous === 'listening' ? 'recovering' : previous))
-      restartTimerRef.current = window.setTimeout(() => {
-        restartTimerRef.current = 0
-        if (wantedRef.current) launchRef.current?.()
-      }, delay)
-    }
+      recognition.onresult = (event) => {
+        if (!isCurrent()) return
+        lastEventAtRef.current = Date.now()
+        attachMeter()
+        let pending = ''
+        let finalised = ''
+        let lastConfidence: number | null = null
+        for (let index = event.resultIndex; index < event.results.length; index += 1) {
+          const result = event.results[index]
+          let best = result[0]
+          for (let alt = 1; alt < result.length; alt += 1) {
+            const candidate = result[alt]
+            if (candidate && candidate.confidence > best.confidence) best = candidate
+          }
+          if (!best) continue
+          if (result.isFinal) {
+            finalised += `${best.transcript} `
+            lastConfidence = best.confidence
+          } else {
+            pending += best.transcript
+          }
+        }
 
-    recognitionRef.current = recognition
-    try {
-      recognition.start()
-    } catch {
-      /* start() throws while the previous session is closing; onend relaunches. */
-    }
-  }, [lang])
+        const raw = finalised.trim()
+        if (raw) {
+          const converted = convertDictation(raw, carryRef.current)
+          carryRef.current = converted.carry
+          if (converted.text) commitRef.current(converted.text)
+          if (lastConfidence !== null && Number.isFinite(lastConfidence) && lastConfidence > 0) setConfidence(lastConfidence)
+          hasInterimRef.current = false
+          interimRef.current('')
+        }
+
+        const preview = pending.trim() ? previewDictation(carryRef.current ? `${carryRef.current} ${pending}` : pending) : ''
+        hasInterimRef.current = preview.length > 0
+        interimRef.current(preview)
+      }
+
+      recognition.onerror = (event) => {
+        if (!isCurrent()) return
+        lastEventAtRef.current = Date.now()
+        const fatal = FATAL_ERRORS[event.error]
+        if (fatal) {
+          wantedRef.current = false
+          generationRef.current += 1
+          setError(fatal)
+          setNotice(null)
+          setStatus('error')
+          return
+        }
+        // 'no-speech', 'aborted' and transient network drops are normal during
+        // a long dictation; onend relaunches the session.
+        if (event.error === 'network') setNotice(NETWORK_NOTICE)
+      }
+
+      recognition.onend = () => {
+        if (!isCurrent()) return
+        recognitionRef.current = null
+        if (hasInterimRef.current) {
+          hasInterimRef.current = false
+          interimRef.current('')
+        }
+        if (!wantedRef.current) {
+          setStatus((previous) => (previous === 'error' ? previous : 'idle'))
+          return
+        }
+        if (startedRef.current) {
+          // A healthy session ended (usually a silence timeout). Relaunch fast
+          // and do NOT count it as a failure, otherwise quiet thinking pauses
+          // would eventually lock dictation out completely.
+          setStatus('recovering')
+          scheduleRelaunch(200)
+          return
+        }
+        failedStartsRef.current += 1
+        if (failedStartsRef.current >= MAX_FAILED_STARTS) {
+          wantedRef.current = false
+          generationRef.current += 1
+          setError(FAILED_START_MESSAGE)
+          setStatus('error')
+          return
+        }
+        setStatus('recovering')
+        scheduleRelaunch(Math.min(2000, 300 * 2 ** failedStartsRef.current))
+      }
+
+      recognitionRef.current = recognition
+      try {
+        recognition.start()
+      } catch {
+        // start() throws if the previous object is still closing; onend of that
+        // object, or the watchdog, will retry.
+        scheduleRelaunch(400)
+      }
+    },
+    [attachMeter, lang, scheduleRelaunch],
+  )
 
   useEffect(() => {
     launchRef.current = launch
   }, [launch])
+
+  /** Abort the live session and start a fresh one under a new generation. */
+  const hardRestart = useCallback(() => {
+    const recognition = recognitionRef.current
+    recognitionRef.current = null
+    generationRef.current += 1
+    if (recognition) {
+      try {
+        recognition.abort()
+      } catch {
+        /* noop */
+      }
+    }
+    lastEventAtRef.current = Date.now()
+    setStatus('recovering')
+    scheduleRelaunch(250)
+  }, [scheduleRelaunch])
 
   const start = useCallback(() => {
     if (!supported) {
@@ -272,61 +349,33 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
     }
     if (wantedRef.current) return
     wantedRef.current = true
-    retriesRef.current = 0
+    generationRef.current += 1
+    failedStartsRef.current = 0
     carryRef.current = ''
     setError(null)
     setNotice(null)
     setConfidence(null)
     setStatus('starting')
-    void (async () => {
-      try {
-        if (navigator.mediaDevices?.getUserMedia) {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            audio: { noiseSuppression: true, echoCancellation: true, autoGainControl: true, channelCount: 1 },
-          })
-          streamRef.current = stream
-          startMeter(stream)
-        }
-      } catch {
-        wantedRef.current = false
-        setStatus('error')
-        setError(FATAL_ERRORS['not-allowed'])
+    // Recognition first: it must own the microphone.
+    launchRef.current?.(generationRef.current)
+
+    if (watchdogRef.current) window.clearInterval(watchdogRef.current)
+    watchdogRef.current = window.setInterval(() => {
+      if (!wantedRef.current) return
+      const now = Date.now()
+      if (!recognitionRef.current) {
+        if (!restartTimerRef.current) scheduleRelaunch(200)
         return
       }
-      if (!wantedRef.current) return
-      launchRef.current?.()
-
-      // Watchdog: a session can stay "open" yet stop returning results, which
-      // is exactly the state where dictation looked permanently broken.
-      if (watchdogRef.current) window.clearInterval(watchdogRef.current)
-      watchdogRef.current = window.setInterval(() => {
-        if (!wantedRef.current) return
-        const now = Date.now()
-        const recognition = recognitionRef.current
-        if (!recognition) return
-        const stale = now - lastResultAtRef.current > STALE_AFTER_MS
-        const rotate = now - sessionStartedAtRef.current > ROTATE_AFTER_MS && !hasInterimRef.current
-        if (!stale && !rotate) return
-        recognitionRef.current = null
-        try {
-          recognition.abort()
-        } catch {
-          /* noop */
-        }
-        lastResultAtRef.current = now
-        setStatus('recovering')
-        if (!restartTimerRef.current) {
-          restartTimerRef.current = window.setTimeout(() => {
-            restartTimerRef.current = 0
-            if (wantedRef.current) launchRef.current?.()
-          }, 250)
-        }
-      }, WATCHDOG_INTERVAL_MS)
-    })()
-  }, [startMeter, supported])
+      const dead = now - lastEventAtRef.current > DEAD_AFTER_MS
+      const rotate = startedRef.current && now - sessionStartedAtRef.current > ROTATE_AFTER_MS && !hasInterimRef.current
+      if (dead || rotate) hardRestart()
+    }, WATCHDOG_INTERVAL_MS)
+  }, [hardRestart, scheduleRelaunch, supported])
 
   const stop = useCallback(() => {
     wantedRef.current = false
+    generationRef.current += 1
     if (restartTimerRef.current) {
       window.clearTimeout(restartTimerRef.current)
       restartTimerRef.current = 0
@@ -359,14 +408,6 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
       }
     }
     stopMeter()
-    streamRef.current?.getTracks().forEach((track) => {
-      try {
-        track.stop()
-      } catch {
-        /* noop */
-      }
-    })
-    streamRef.current = null
     setNotice(null)
     setStatus((previous) => (previous === 'error' ? previous : 'idle'))
   }, [stopMeter])
