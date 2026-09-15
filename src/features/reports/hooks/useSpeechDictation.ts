@@ -1,22 +1,23 @@
 /**
  * useSpeechDictation — live Persian speech-to-text on the Web Speech API.
  *
- * Why it is built this way:
+ * Design notes:
  *  - The mic is opened with getUserMedia first (noiseSuppression,
  *    echoCancellation, autoGainControl, mono) so the recognizer receives an
  *    already-cleaned track and we can show a real input-level meter.
  *  - maxAlternatives = 3 and the alternative with the highest confidence wins.
- *  - A single failure must never kill dictation. Errors are classified:
- *    only permission / service / language errors are fatal, everything else is
- *    retried with exponential backoff.
+ *  - Interim results are streamed out through onInterim so the caller can show
+ *    them in the real field while the user is still speaking. The caller
+ *    rewrites them in place from a stable anchor, so a revised guess never
+ *    deletes text that was already final.
+ *  - A single failure must never kill dictation: only permission / service /
+ *    language / missing-device errors are fatal, everything else is retried
+ *    with exponential backoff.
  *  - A watchdog restarts a session that is alive but has stopped producing
- *    results, and rotates the session before Chrome's own time limit, because
- *    a stale session silently stops recognising anything.
- *  - Duplicate final chunks (the recognizer re-emits them around restarts) are
- *    dropped, and unfinished spoken commands are carried across chunks.
+ *    results, and rotates the session before Chrome's own time limit.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { convertDictation, previewDictation, type DictationCommand } from '../utils/persianDictation'
+import { convertDictation, previewDictation } from '../utils/persianDictation'
 
 export type DictationStatus = 'unsupported' | 'idle' | 'starting' | 'listening' | 'recovering' | 'error'
 
@@ -67,17 +68,16 @@ const MAX_RETRIES = 8
 
 export interface UseSpeechDictationOptions {
   lang?: string
-  /** Called with each finalised, normalised chunk of text. */
+  /** Finalised, punctuated text. Append it and move the anchor. */
   onCommit(text: string): void
-  /** Called for dictated editing commands («حذف کلمه», «حذف جمله»). */
-  onCommand?(command: DictationCommand): void
+  /** Current in-progress guess. Render it after the anchor; it will be revised. */
+  onInterim(text: string): void
 }
 
 export interface UseSpeechDictationResult {
   supported: boolean
   status: DictationStatus
   listening: boolean
-  interim: string
   level: number
   confidence: number | null
   /** Fatal problem; dictation stopped. */
@@ -89,10 +89,9 @@ export interface UseSpeechDictationResult {
   toggle(): void
 }
 
-export function useSpeechDictation({ lang = 'fa-IR', onCommit, onCommand }: UseSpeechDictationOptions): UseSpeechDictationResult {
+export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseSpeechDictationOptions): UseSpeechDictationResult {
   const [supported] = useState<boolean>(() => isDictationSupported())
   const [status, setStatus] = useState<DictationStatus>(() => (isDictationSupported() ? 'idle' : 'unsupported'))
-  const [interim, setInterim] = useState('')
   const [level, setLevel] = useState(0)
   const [confidence, setConfidence] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -101,7 +100,7 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onCommand }: UseS
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const launchRef = useRef<(() => void) | null>(null)
   const commitRef = useRef(onCommit)
-  const commandRef = useRef(onCommand)
+  const interimRef = useRef(onInterim)
   const wantedRef = useRef(false)
   const streamRef = useRef<MediaStream | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
@@ -114,14 +113,13 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onCommand }: UseS
   const sessionStartedAtRef = useRef(0)
   const hasInterimRef = useRef(false)
   const carryRef = useRef('')
-  const lastChunkRef = useRef({ text: '', at: 0 })
 
   useEffect(() => {
     commitRef.current = onCommit
   }, [onCommit])
   useEffect(() => {
-    commandRef.current = onCommand
-  }, [onCommand])
+    interimRef.current = onInterim
+  }, [onInterim])
 
   const stopMeter = useCallback(() => {
     if (frameRef.current) {
@@ -190,7 +188,7 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onCommand }: UseS
         }
         if (!best) continue
         if (result.isFinal) {
-          finalised += best.transcript + ' '
+          finalised += `${best.transcript} `
           lastConfidence = best.confidence
         } else {
           pending += best.transcript
@@ -199,21 +197,19 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onCommand }: UseS
 
       const raw = finalised.trim()
       if (raw) {
-        const now = Date.now()
-        const duplicate = raw === lastChunkRef.current.text && now - lastChunkRef.current.at < 1500
-        lastChunkRef.current = { text: raw, at: now }
-        if (!duplicate) {
-          const converted = convertDictation(raw, carryRef.current)
-          carryRef.current = converted.carry
-          if (converted.text) commitRef.current(converted.text)
-          for (const command of converted.commands) commandRef.current?.(command)
-          if (lastConfidence !== null && Number.isFinite(lastConfidence) && lastConfidence > 0) setConfidence(lastConfidence)
-        }
+        const converted = convertDictation(raw, carryRef.current)
+        carryRef.current = converted.carry
+        if (converted.text) commitRef.current(converted.text)
+        if (lastConfidence !== null && Number.isFinite(lastConfidence) && lastConfidence > 0) setConfidence(lastConfidence)
+        // The finalised part is now part of the anchor; only the still-open
+        // guess may remain on screen.
+        hasInterimRef.current = false
+        interimRef.current('')
       }
 
-      const preview = pending ? previewDictation(carryRef.current ? `${carryRef.current} ${pending}` : pending) : ''
+      const preview = pending.trim() ? previewDictation(carryRef.current ? `${carryRef.current} ${pending}` : pending) : ''
       hasInterimRef.current = preview.length > 0
-      setInterim(preview)
+      interimRef.current(preview)
     }
 
     recognition.onerror = (event) => {
@@ -232,8 +228,12 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onCommand }: UseS
 
     recognition.onend = () => {
       recognitionRef.current = null
-      hasInterimRef.current = false
-      setInterim('')
+      // An open guess that never became final is dropped, so the field keeps
+      // only text the recognizer actually confirmed.
+      if (hasInterimRef.current) {
+        hasInterimRef.current = false
+        interimRef.current('')
+      }
       if (!wantedRef.current) {
         setStatus((previous) => (previous === 'error' ? previous : 'idle'))
         return
@@ -274,7 +274,6 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onCommand }: UseS
     wantedRef.current = true
     retriesRef.current = 0
     carryRef.current = ''
-    lastChunkRef.current = { text: '', at: 0 }
     setError(null)
     setNotice(null)
     setConfidence(null)
@@ -341,7 +340,10 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onCommand }: UseS
       const flushed = convertDictation('', carryRef.current, { flush: true })
       carryRef.current = ''
       if (flushed.text) commitRef.current(flushed.text)
-      for (const command of flushed.commands) commandRef.current?.(command)
+    }
+    if (hasInterimRef.current) {
+      hasInterimRef.current = false
+      interimRef.current('')
     }
     const recognition = recognitionRef.current
     recognitionRef.current = null
@@ -365,8 +367,6 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onCommand }: UseS
       }
     })
     streamRef.current = null
-    hasInterimRef.current = false
-    setInterim('')
     setNotice(null)
     setStatus((previous) => (previous === 'error' ? previous : 'idle'))
   }, [stopMeter])
@@ -386,7 +386,6 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onCommand }: UseS
     supported,
     status,
     listening: status === 'listening' || status === 'starting' || status === 'recovering',
-    interim,
     level,
     confidence,
     error,
