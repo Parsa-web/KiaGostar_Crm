@@ -10,6 +10,14 @@
  * The level meter is therefore derived from the recognizer's own speech
  * events instead of from raw audio.
  *
+ * NO-DUPLICATE RULE (do not break this either):
+ * A finalised phrase must be committed exactly once. Two guards enforce it:
+ *  - per session, `nextFinalIndex` skips results that were already committed,
+ *    because resultIndex is not guaranteed to move past them;
+ *  - across a relaunch, the first commit of a fresh session is dropped if it
+ *    is identical to the previous commit and arrives inside
+ *    DUPLICATE_WINDOW_MS, which is how the recognizer re-emits a tail.
+ *
  * Session lifecycle: every relaunch goes through one scheduler guarded by a
  * generation counter, so handlers of a superseded session can never spawn a
  * competing recognition object. Sessions that end after a successful start
@@ -82,6 +90,8 @@ const MAX_FAILED_STARTS = 6
  */
 const NOISE_CONFIDENCE_FLOOR = 0.12
 const NOISE_MAX_WORDS = 2
+/** Window in which a repeated first commit of a new session counts as an echo. */
+const DUPLICATE_WINDOW_MS = 2500
 /** Meter value while the recognizer reports active speech. */
 const SPEAKING_LEVEL = 0.95
 const QUIET_LEVEL = 0.05
@@ -134,6 +144,10 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
   const sessionStartedAtRef = useRef(0)
   const hasInterimRef = useRef(false)
   const carryRef = useRef('')
+  /** Last raw phrase handed to onCommit, for the session-boundary echo guard. */
+  const lastCommitRef = useRef('')
+  const lastCommitAtRef = useRef(0)
+  const sessionCommittedRef = useRef(false)
 
   useEffect(() => {
     commitRef.current = onCommit
@@ -164,6 +178,11 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
       recognition.maxAlternatives = 5
       startedRef.current = false
       lastEventAtRef.current = Date.now()
+      /**
+       * Index of the first result of THIS session that has not been committed
+       * yet. resultIndex alone is not a reliable watermark, so we keep our own.
+       */
+      let nextFinalIndex = 0
 
       const isCurrent = () => generation === generationRef.current
 
@@ -173,6 +192,8 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
         failedStartsRef.current = 0
         sessionStartedAtRef.current = Date.now()
         lastEventAtRef.current = Date.now()
+        nextFinalIndex = 0
+        sessionCommittedRef.current = false
         setStatus('listening')
         setNotice(null)
       }
@@ -219,7 +240,8 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
         let pending = ''
         let finalised = ''
         let lastConfidence: number | null = null
-        for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const from = Math.min(event.resultIndex, nextFinalIndex)
+        for (let index = from; index < event.results.length; index += 1) {
           const result = event.results[index]
           let best = result[0]
           for (let alt = 1; alt < result.length; alt += 1) {
@@ -228,24 +250,35 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
           }
           if (!best) continue
           const transcript = best.transcript.trim()
-          if (!transcript) continue
           if (result.isFinal) {
+            // Already committed on an earlier event: skip, never re-emit.
+            if (index < nextFinalIndex) continue
+            nextFinalIndex = index + 1
+            if (!transcript) continue
             const words = transcript.split(/\s+/).length
             const noise = best.confidence > 0 && best.confidence < NOISE_CONFIDENCE_FLOOR && words <= NOISE_MAX_WORDS
             if (noise) continue
             finalised += `${transcript} `
             lastConfidence = best.confidence
-          } else {
+          } else if (index >= nextFinalIndex) {
             pending += best.transcript
           }
         }
 
         const raw = finalised.trim()
         if (raw) {
-          const converted = convertDictation(raw, carryRef.current)
-          carryRef.current = converted.carry
-          if (converted.text) commitRef.current(converted.text)
-          if (lastConfidence !== null && Number.isFinite(lastConfidence) && lastConfidence > 0) setConfidence(lastConfidence)
+          // Session-boundary echo: the recognizer sometimes replays the tail of
+          // the previous session right after a relaunch.
+          const echo = !sessionCommittedRef.current && raw === lastCommitRef.current && now - lastCommitAtRef.current < DUPLICATE_WINDOW_MS
+          sessionCommittedRef.current = true
+          lastCommitRef.current = raw
+          lastCommitAtRef.current = now
+          if (!echo) {
+            const converted = convertDictation(raw, carryRef.current)
+            carryRef.current = converted.carry
+            if (converted.text) commitRef.current(converted.text)
+            if (lastConfidence !== null && Number.isFinite(lastConfidence) && lastConfidence > 0) setConfidence(lastConfidence)
+          }
           hasInterimRef.current = false
           interimRef.current('')
         }
@@ -347,6 +380,9 @@ export function useSpeechDictation({ lang = 'fa-IR', onCommit, onInterim }: UseS
     generationRef.current += 1
     failedStartsRef.current = 0
     carryRef.current = ''
+    lastCommitRef.current = ''
+    lastCommitAtRef.current = 0
+    sessionCommittedRef.current = false
     setError(null)
     setNotice(null)
     setConfidence(null)
